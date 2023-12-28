@@ -172,7 +172,8 @@ async def rearrange_voice_channels(channel_prefix: Optional[str]):
             if len(channels) > 1:
                 channels.sort(key=lambda x: x.position)
                 first_channel_position = channels[0].position
-                for i, channel in enumerate(channels):
+                # Ignore rearranging the first channel
+                for i, channel in enumerate(channels[1:], start=1):
                     # Position the voice channel relative to the first voice channel
                     await channel.edit(position=first_channel_position + i)
 
