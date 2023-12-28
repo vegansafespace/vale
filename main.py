@@ -1,6 +1,7 @@
+from collections import defaultdict
 from datetime import datetime
 import re
-from typing import Optional
+from typing import Optional, List, Dict
 
 import discord
 from discord import app_commands
@@ -97,7 +98,7 @@ async def check_voice_channels():
                           isinstance(channel, discord.VoiceChannel) and "#" in channel.name]
 
         # Gruppiere Kanäle basierend auf dem Namen vor dem "#"
-        grouped_channels = {}
+        grouped_channels: Dict[str, List[discord.VoiceChannel]] = {}
         for channel in voice_channels:
             prefix = channel.name.split("#")[0].strip()
             if prefix not in grouped_channels:
@@ -146,7 +147,7 @@ async def rearrange_voice_channels():
                           isinstance(channel, discord.VoiceChannel) and "#" in channel.name]
 
         # Gruppiere Kanäle basierend auf dem Namen vor dem "#"
-        grouped_channels = {}
+        grouped_channels: Dict[str, List[discord.VoiceChannel]] = {}
         for channel in voice_channels:
             prefix = channel.name.split("#")[0].strip()
             if prefix not in grouped_channels:
@@ -156,8 +157,10 @@ async def rearrange_voice_channels():
         for prefix, channels in grouped_channels.items():
             if len(channels) > 1:
                 channels.sort(key=lambda x: x.position)
+                first_channel_position = channels[0].position
                 for i, channel in enumerate(channels):
-                    await channel.edit(position=i+1)
+                    # Position the voice channel relative to the first voice channel
+                    await channel.edit(position=first_channel_position + i)
 
 
 @tasks.loop(seconds=10)
