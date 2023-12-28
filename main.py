@@ -127,6 +127,37 @@ async def check_voice_channels():
                         position=channel.position + 1,
                     )
 
+                    await rearrange_voice_channels()
+
+
+@tasks.loop(seconds=10)
+async def rearrange_voice_channels():
+    print("Rearranging voice channels...")
+
+    for guild in client.guilds:
+        # Get voice category by id VOICE_CATEGORY_ID
+        category = discord.utils.get(guild.categories, id=VOICE_CATEGORY_ID)
+
+        if category is None:
+            continue
+
+        voice_channels = [channel for channel in category.channels if
+                          isinstance(channel, discord.VoiceChannel) and "#" in channel.name]
+
+        # Gruppiere Kanäle basierend auf dem Namen vor dem "#"
+        grouped_channels = {}
+        for channel in voice_channels:
+            prefix = channel.name.split("#")[0].strip()
+            if prefix not in grouped_channels:
+                grouped_channels[prefix] = []
+            grouped_channels[prefix].append(channel)
+
+        for prefix, channels in grouped_channels.items():
+            if len(channels) > 1:
+                channels.sort(key=lambda x: x.position)
+                for i, channel in enumerate(channels):
+                    await channel.edit(position=i+1)
+
 
 @tasks.loop(seconds=10)
 async def check_no_roles_assigned():
