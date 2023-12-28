@@ -130,11 +130,19 @@ async def check_voice_channels():
                         position=channel.position + 1,
                     )
 
-                    await rearrange_voice_channels()
+                    await rearrange_voice_channels(
+                        channel_prefix=new_channel_name.split("#")[0].strip(),
+                    )
 
 
 @tasks.loop(seconds=10)
-async def rearrange_voice_channels():
+async def rearrange_voice_channels(channel_prefix: Optional[str]):
+    """
+    Rearranges voice channels within a given category based on certain conditions.
+
+    :param channel_prefix: (Optional) The prefix of voice channels to consider for rearrangement.
+    :return: None
+    """
     print("Rearranging voice channels...")
 
     for guild in client.guilds:
@@ -151,8 +159,13 @@ async def rearrange_voice_channels():
         grouped_channels: Dict[str, List[discord.VoiceChannel]] = {}
         for channel in voice_channels:
             prefix = channel.name.split("#")[0].strip()
+
+            if channel_prefix is not None and channel_prefix is not prefix:
+                continue
+
             if prefix not in grouped_channels:
                 grouped_channels[prefix] = []
+
             grouped_channels[prefix].append(channel)
 
         for prefix, channels in grouped_channels.items():
