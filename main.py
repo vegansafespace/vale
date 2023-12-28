@@ -73,6 +73,7 @@ async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('------')
     check_voice_channels.start()
+    rearrange_voice_channels.start()
     check_no_roles_assigned.start()
 
 
@@ -84,11 +85,6 @@ async def on_member_join(member: discord.Member):
 
 
 @tasks.loop(seconds=10)
-async def loop():
-    await rearrange_voice_channels()
-    await check_voice_channels()
-
-
 async def check_voice_channels():
     for guild in client.guilds:
         # Get voice category by id VOICE_CATEGORY_ID
@@ -135,6 +131,7 @@ async def check_voice_channels():
                     await rearrange_voice_channels()
 
 
+@tasks.loop(seconds=10)
 async def rearrange_voice_channels():
     print("Rearranging voice channels...")
 
