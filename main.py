@@ -73,7 +73,7 @@ async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('------')
     check_voice_channels.start()
-    rearrange_voice_channels.start()
+    # rearrange_voice_channels.start()
     check_no_roles_assigned.start()
 
 
