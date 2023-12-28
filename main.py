@@ -122,6 +122,7 @@ async def check_voice_channels():
                         new_channel_name,
                         user_limit=channel.user_limit,
                         overwrites=channel.overwrites,
+                        position=channel.position + 1,
                     )
 
                     # Adjust the position of the new channel
