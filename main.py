@@ -1,10 +1,10 @@
 from collections import defaultdict
 from datetime import datetime
 import re
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Union
 
 import discord
-from discord import app_commands
+from discord import app_commands, Colour, User, Member
 from discord.ext import tasks
 from discord.utils import MISSING
 from dotenv import load_dotenv
@@ -39,6 +39,8 @@ VEGAN_ROLE_ID: int = int(os.getenv('VEGAN_ROLE_ID'))
 NON_VEGAN_ROLE_ID: int = int(os.getenv('NON_VEGAN_ROLE_ID'))
 
 TEAM_BANS_CHANNEL_ID: int = int(os.getenv('TEAM_BANS_CHANNEL_ID'))
+
+MAIN_CHAT_CHANNEL_ID: int = int(os.getenv('MAIN_CHAT_CHANNEL_ID'))
 
 # Map which user joined which voice channel and when
 # Format: {user_id: {voice_channel_id: datetime}}
@@ -289,8 +291,24 @@ async def _assign_initial_role(
         f'{member.mention} hat die Rolle @{role_to_assign.name} bekommen!'
     )
 
+    await _report_role_assignment(interaction, executor, member, role_to_assign, reason)
+    await _welcome_user(interaction, executor, member, role_to_assign)
+
+    await interaction.response.send_message('Du hast {} die Rolle {} zugewiesen!'.format(
+        member.mention,
+        role_to_assign.mention
+    ), ephemeral=True)
+
+
+async def _report_role_assignment(
+        interaction: discord.Interaction,
+        executor: Union[User, Member],
+        member: discord.Member,
+        assigned_role: discord.Role,
+        reason: str,
+):
     description = '{} ({}, {}) hat von {} ({}, {}) die Rolle {} zugewiesen bekommen.\n\n' \
-                  '**Grund:**\n\n' \
+                  '**Grund:**\n' \
                   '{}'.format(
         member.mention,
         member.display_name,
@@ -298,27 +316,53 @@ async def _assign_initial_role(
         executor.mention,
         executor.display_name,
         executor.id,
-        role_to_assign.mention,
+        assigned_role.mention,
         reason
     )
 
     embed = discord.Embed(
-        title='@{} Rolle zugewiesen'.format(role_to_assign.name),
+        title='{} freigeschaltet'.format(member.display_name),
         description=description,
-        timestamp=interaction.created_at
+        timestamp=interaction.created_at,
+        colour=assigned_role.colour
     )
 
-    embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
+    embed.set_thumbnail(url=member.display_avatar.url)
 
     # Handle report by sending it into a role justification channel
     role_justification_channel = interaction.guild.get_channel(ROLE_JUSTIFICATION_CHANNEL_ID)
 
     await role_justification_channel.send(embed=embed)
 
-    await interaction.response.send_message('Du hast {} die Rolle @{} zugewiesen!'.format(
-        member.mention,
-        role_to_assign.name
-    ), ephemeral=True)
+
+async def _welcome_user(
+        interaction: discord.Interaction,
+        executor: Union[User, Member],
+        member: discord.Member,
+        assigned_role: discord.Role,
+):
+    embed = discord.Embed(
+        title='Willkommen {}!'.format(member.display_name),
+        description='{} wurde soeben freigeschaltet und ist jetzt Teil der Vegan Safespace Community!'.format(
+            member.display_name,
+        ),
+        colour=assigned_role.colour,
+    )
+
+    embed.set_thumbnail(url=member.display_avatar.url)
+
+    embed.set_footer(
+        text='Von {} freigeschaltet!'.format(executor.display_name),
+        icon_url=executor.display_avatar.url,
+    )
+
+    # Welcome member to everyone
+    main_chat_channel = interaction.guild.get_channel(MAIN_CHAT_CHANNEL_ID)
+
+    await main_chat_channel.send(
+        content="Willkommen {} auf Vegan Safespace!".format(member.mention),
+        embed=embed,
+    )
 
 
 @client.tree.command()
