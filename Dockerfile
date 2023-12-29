@@ -9,4 +9,4 @@ RUN pipenv install --system --deploy
 #COPY .env ./
 COPY src/ ./
 
-CMD ["python", "./src/main.py"]
+CMD ["python", "./main.py"]
