@@ -7,6 +7,6 @@ COPY Pipfile Pipfile.lock ./
 RUN pipenv install --system --deploy
 
 #COPY .env ./
-COPY src/ ./
+COPY src/ ./src
 
-CMD ["python", "./main.py"]
+CMD ["python", "-m", "src.main"]

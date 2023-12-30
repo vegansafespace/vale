@@ -1,0 +1,33 @@
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DISCORD_TOKEN: str = os.getenv('DISCORD_TOKEN')
+DISCORD_GUILD: int = int(os.getenv('DISCORD_GUILD'))
+
+APPLICATION_VOICE_WAITING_CHANNEL_ID: int = int(os.getenv('APPLICATION_VOICE_WAITING_CHANNEL_ID'))
+APPLICATION_PING_CHANNEL_ID: int = int(os.getenv('APPLICATION_PING_CHANNEL_ID'))
+
+REPORTS_CHANNEL_ID: int = int(os.getenv('REPORTS_CHANNEL_ID'))
+ROLE_JUSTIFICATION_CHANNEL_ID: int = int(os.getenv('ROLE_JUSTIFICATION_CHANNEL_ID'))
+
+PRIVATE_CHANNELS_CATEGORY_ID: int = int(os.getenv('PRIVATE_CHANNELS_CATEGORY_ID'))
+
+VOICE_HUB_CATEGORY_ID: int = int(os.getenv('VOICE_HUB_CATEGORY_ID'))
+VOICE_HUB_MOVE_ME_CHANNEL_ID: int = int(os.getenv('VOICE_HUB_MOVE_ME_CHANNEL_ID'))
+VOICE_HUB_CREATE_CHANNEL_ID: int = int(os.getenv('VOICE_HUB_CREATE_CHANNEL_ID'))
+VOICE_HUB_CHANNEL_PREFIX: str = os.getenv('VOICE_HUB_CHANNEL_PREFIX')
+
+VOICE_CATEGORY_ID: int = int(os.getenv('VOICE_CATEGORY_ID'))
+
+TEAM_ROLE_ID: int = int(os.getenv('TEAM_ROLE_ID'))
+NEW_USER_ROLE_ID: int = int(os.getenv('NEW_USER_ROLE_ID'))
+SUPPORT_ROLE_ID: int = int(os.getenv('SUPPORT_ROLE_ID'))
+VEGAN_ROLE_ID: int = int(os.getenv('VEGAN_ROLE_ID'))
+NON_VEGAN_ROLE_ID: int = int(os.getenv('NON_VEGAN_ROLE_ID'))
+
+TEAM_BANS_CHANNEL_ID: int = int(os.getenv('TEAM_BANS_CHANNEL_ID'))
+
+MAIN_CHAT_CHANNEL_ID: int = int(os.getenv('MAIN_CHAT_CHANNEL_ID'))
