@@ -6,7 +6,7 @@ from src.components.application import Application
 from src.components.voice_category import VoiceCategory
 from src.components.voice_hub import VoiceHub
 from src.helpers.env import NEW_USER_ROLE_ID, VOICE_HUB_MOVE_ME_CHANNEL_ID, VOICE_HUB_CREATE_CHANNEL_ID, \
-    APPLICATION_VOICE_WAITING_CHANNEL_ID, VOICE_CATEGORY_ID, VOICE_HUB_CATEGORY_ID, VOICE_HUB_CHANNEL_PREFIX
+    APPLICATION_VOICE_WAITING_CHANNEL_ID, VOICE_CATEGORY_ID, VOICE_HUB_CATEGORY_ID
 from src.main import container
 from src.vale import Vale
 
@@ -63,12 +63,7 @@ class Events(commands.Cog):
 
         # Check if user left a voice hub channel
         if before.channel is not None and before.channel.category_id == VOICE_HUB_CATEGORY_ID:
-            # Check if is voice hub voice channel with VOICE_HUB_CHANNEL_PREFIX
-            if before.channel.name.startswith(VOICE_HUB_CHANNEL_PREFIX):
-                # Check if user is the only one left in the channel
-                if len(before.channel.members) == 0:
-                    # Delete channel
-                    await before.channel.delete()
+            await self.voice_hub.on_leave_hub_channel(member, before, after)
 
 
 async def setup(bot: Vale):

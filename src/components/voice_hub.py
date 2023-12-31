@@ -181,3 +181,16 @@ class VoiceHub:
         )
 
         await member.move_to(voice_channel)
+
+    async def on_leave_hub_channel(
+            self,
+            member: discord.Member,
+            before: discord.VoiceState,
+            after: discord.VoiceState
+    ):
+        # Check if is voice hub voice channel with VOICE_HUB_CHANNEL_PREFIX
+        if before.channel.name.startswith(VOICE_HUB_CHANNEL_PREFIX):
+            # Check if user is the only one left in the channel
+            if len(before.channel.members) == 0:
+                # Delete channel
+                await before.channel.delete()
