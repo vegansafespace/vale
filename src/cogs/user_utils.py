@@ -28,9 +28,9 @@ class UserUtils(commands.Cog):
 
     @app_commands.checks.has_role(VEGAN_ROLE_ID)
     async def show_join_date(self, interaction: discord.Interaction, member: discord.Member):
-        # The format_dt function formats the date time into a human readable representation in the official client
         await interaction.response.send_message(
-            f'{member} joined at {discord.utils.format_dt(member.joined_at)}', ephemeral=True
+            f'{member} ist <t:{member.joined_at.timestamp()}:R> gejoined',
+            ephemeral=True
         )
 
     @app_commands.checks.has_role(VEGAN_ROLE_ID)
