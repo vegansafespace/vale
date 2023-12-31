@@ -21,15 +21,6 @@ class Events(commands.Cog):
         self.voice_hub = voice_hub
 
     @commands.Cog.listener()
-    async def on_ready(self):
-        guilds_str: str = ''
-
-        for guild in self.bot.guilds:
-            guilds_str += f'{guild.name} (ID: {guild.id})'
-
-        print(f'Logged in as {self.bot.user} (ID: {self.bot.user.id}, GUILDS: {guilds_str})')
-
-    @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         print(f'{member} (ID: {member.id}) joined the server!')
         new_user_role = discord.utils.get(member.guild.roles, id=NEW_USER_ROLE_ID)

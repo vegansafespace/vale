@@ -14,8 +14,10 @@ class TeamUtils(commands.Cog):
     def __init__(self, bot: Vale):
         self.bot = bot
 
-    @commands.hybrid_command()
-    @commands.has_role(TEAM_ROLE_ID)
+    @app_commands.command(
+        description='Eine Person bannen',
+    )
+    @app_commands.checks.has_role(TEAM_ROLE_ID)
     @app_commands.describe(
         user=f'Die Person, die gebannt werden soll',
         reason=f'Der Grund warum die Person gebannt werden soll',
@@ -74,8 +76,10 @@ class TeamUtils(commands.Cog):
             user.mention,
         ), ephemeral=True)
 
-    @commands.hybrid_command()
-    @commands.has_role(TEAM_ROLE_ID)
+    @app_commands.command(
+        description='Einer Person die Vegan-Rolle vergeben',
+    )
+    @app_commands.checks.has_role(TEAM_ROLE_ID)
     @app_commands.describe(
         member='Eine Person die die Vegan-Rolle bekommen soll',
         reason='Der Grund warum die Person die Vegan-Rolle bekommen soll',

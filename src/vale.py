@@ -3,8 +3,6 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 
-from src.helpers.env import DISCORD_GUILD
-
 
 class Vale(commands.Bot):
     def __init__(self):
@@ -25,7 +23,13 @@ class Vale(commands.Bot):
 
         super().__init__(command_prefix='/', intents=intents)
 
-        self.guild_main = self.get_guild(DISCORD_GUILD)
+    async def on_ready(self):
+        guild_count = len(self.guilds)
+
+        print(
+            f"Logged in as {self.user} (ID: {self.user.id})"
+            f" in {guild_count} {'guild' if guild_count is 1 else 'guilds'}"
+        )
 
     async def setup_hook(self):
         # Load cogs dynamically

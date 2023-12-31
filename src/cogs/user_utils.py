@@ -76,7 +76,9 @@ class UserUtils(commands.Cog):
             ephemeral=True
         )
 
-    @commands.command()
+    @app_commands.command(
+        description='Einfach ein Test',
+    )
     @app_commands.describe(
         user=f'Eine Person, die erwähnt werden soll'
     )
