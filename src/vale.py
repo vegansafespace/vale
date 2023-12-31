@@ -28,7 +28,7 @@ class Vale(commands.Bot):
 
         print(
             f"Logged in as {self.user} (ID: {self.user.id})"
-            f" in {guild_count} {'guild' if guild_count is 1 else 'guilds'}"
+            f" in {guild_count} {'guild' if guild_count == 1 else 'guilds'}"
         )
 
     async def setup_hook(self):
