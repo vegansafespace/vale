@@ -104,3 +104,17 @@ class Application:
                 # Delete message
                 await message.delete()
                 break
+
+    async def on_leave_application_voice(
+            self,
+            member: discord.Member,
+            before: discord.VoiceState,
+            after: discord.VoiceState
+    ):
+        left_application_channel = before.channel.name.startswith('bewerbung-')
+        channel_is_empty = len(before.channel.members) == 0
+
+        # Check if left channel that is prefixed with "bewerbung-" and if user is the only one left in the channel
+        if left_application_channel and channel_is_empty:
+            # Delete channel
+            await before.channel.delete()

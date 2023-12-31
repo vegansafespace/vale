@@ -6,7 +6,7 @@ from src.components.application import Application
 from src.components.voice_category import VoiceCategory
 from src.components.voice_hub import VoiceHub
 from src.helpers.env import NEW_USER_ROLE_ID, VOICE_HUB_MOVE_ME_CHANNEL_ID, VOICE_HUB_CREATE_CHANNEL_ID, \
-    APPLICATION_VOICE_WAITING_CHANNEL_ID, VOICE_CATEGORY_ID, VOICE_HUB_CATEGORY_ID
+    APPLICATION_VOICE_WAITING_CHANNEL_ID, VOICE_CATEGORY_ID, VOICE_HUB_CATEGORY_ID, APPLICATION_CATEGORY_ID
 from src.main import container
 from src.vale import Vale
 
@@ -64,6 +64,10 @@ class Events(commands.Cog):
         # Check if user left a voice hub channel
         if before.channel is not None and before.channel.category_id == VOICE_HUB_CATEGORY_ID:
             await self.voice_hub.on_leave_hub_channel(member, before, after)
+
+        # Check if user left an application voice channel
+        if before.channel is not None and before.channel.category_id == APPLICATION_CATEGORY_ID:
+            await self.application.on_leave_application_voice(member, before, after)
 
 
 async def setup(bot: Vale):
