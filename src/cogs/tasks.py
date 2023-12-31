@@ -91,9 +91,6 @@ class Tasks(commands.Cog):
 
 
 async def setup(bot: Vale):
-    bot_a = bot
-    bot_b = container.bot()
-
     await bot.add_cog(
         Tasks(
             bot,
