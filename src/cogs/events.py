@@ -57,6 +57,10 @@ class Events(commands.Cog):
         if before.channel is not None and before.channel.id == APPLICATION_VOICE_WAITING_CHANNEL_ID:
             await self.application.on_leave_waiting_room(member, before, after)
 
+        # Check if user left the move me channel
+        if before.channel is not None and before.channel.id == VOICE_HUB_MOVE_ME_CHANNEL_ID:
+            await self.voice_hub.on_leave_move_me_channel(member, before, after)
+
         # Check if user left a voice hub channel
         if before.channel is not None and before.channel.category_id == VOICE_HUB_CATEGORY_ID:
             # Check if is voice hub voice channel with VOICE_HUB_CHANNEL_PREFIX

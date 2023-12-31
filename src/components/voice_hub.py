@@ -106,8 +106,23 @@ class VoiceHub:
         await after.channel.send(
             f'{member.mention} Bitte wähle einen Kanal aus, dem Du gerne beitreten möchtest:',
             view=discord.ui.View(timeout=None).add_item(select),
-            delete_after=120.0
         )
+
+    async def on_leave_move_me_channel(
+            self,
+            member: discord.Member,
+            before: discord.VoiceState,
+            after: discord.VoiceState
+    ):
+        channel = before.channel
+
+        # Remove ping message if user left the move me channel
+        async for message in channel.history(limit=100):
+            # Check if message mentions the user
+            if member.mention in message.content:
+                # Delete message
+                await message.delete()
+                break
 
     async def on_join_create_channel(
             self,
