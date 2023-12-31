@@ -19,6 +19,20 @@ def main() -> None:
     @commands.is_owner()
     async def sync(ctx: commands.Context, guilds: commands.Greedy[discord.Object],
                    spec: Optional[Literal["~", "*", "^"]] = None) -> None:
+        """
+        Synchronize commands between bot and guild(s).
+
+        :param ctx: The context in which the command is being invoked.
+        :type ctx: commands.Context
+        :param guilds: A list of guild objects or ids, if provided.
+        :type guilds: commands.Greedy[discord.Object]
+        :param spec: An optional string specifying the sync behavior. Possible values are "~" (sync all guild commands for the current context's guild), "*" (copy all global commands to the
+        * current guild and sync), and "^" (remove all guild commands from the CommandTree and sync, effectively removing all commands from the guild). Default is None.
+        :type spec: Optional[Literal["~", "*", "^"]]
+        :return: None
+        :rtype: None
+
+        """
         if not guilds:
             if spec == "~":
                 # sync all guild commands for the current context’s guild
