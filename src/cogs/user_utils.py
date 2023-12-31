@@ -82,6 +82,7 @@ class UserUtils(commands.Cog):
     @app_commands.describe(
         user=f'Eine Person, die erwähnt werden soll'
     )
+    @app_commands.guild_only()
     @app_commands.checks.has_role(VEGAN_ROLE_ID)
     async def test(self, interaction: discord.Interaction, user: discord.User):
         await interaction.response.send_message('Du hast {} erwähnt!'.format(
