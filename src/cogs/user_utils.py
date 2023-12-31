@@ -14,14 +14,14 @@ class UserUtils(commands.Cog):
 
         self.bot.tree.add_command(
             app_commands.ContextMenu(
-                name='Show join date (new)',
+                name='Beitrittsdatum zeigen',
                 callback=self.show_join_date,
             )
         )
 
         self.bot.tree.add_command(
             app_commands.ContextMenu(
-                name='Dem Team melden (neu)',
+                name='Dem Team melden',
                 callback=self.report_message,
             )
         )
