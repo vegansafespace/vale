@@ -12,18 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     environment: Production
     steps:
-    - name: executing remote ssh commands using password
-      uses: appleboy/ssh-action@v1.0.1
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        port: ${{ secrets.SSH_PORT }}
-        username: ${{ secrets.SSH_USERNAME }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        script: |
-          cd ./bot/prod
-          # Pull new changes
-          git pull
-          # Build new Docker Image
-          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose build
-          # Restart Compose Services
-          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose up -d --force-recreate
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.0.1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd ./bot/prod
+            # Pull new changes
+            git pull
+            # Build new Docker Image
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose build --no-cache
+            # Restart Compose Services
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose up -d --force-recreate
