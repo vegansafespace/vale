@@ -17,13 +17,13 @@ class TeamUtils(commands.Cog):
     @app_commands.command(
         description='Eine Person bannen',
     )
-    @app_commands.checks.has_role(TEAM_ROLE_ID)
     @app_commands.describe(
         user=f'Die Person, die gebannt werden soll',
         reason=f'Der Grund warum die Person gebannt werden soll',
         delete_messages=f'Ob die Nachrichten der Person gelöscht werden sollen'
     )
     @app_commands.guild_only()
+    @app_commands.checks.has_role(TEAM_ROLE_ID)
     async def ban(self, interaction: discord.Interaction, user: discord.User, reason: str,
                   delete_messages: bool = False):
         executor = interaction.user
@@ -80,12 +80,12 @@ class TeamUtils(commands.Cog):
     @app_commands.command(
         description='Einer Person die Vegan-Rolle vergeben',
     )
-    @app_commands.checks.has_role(TEAM_ROLE_ID)
     @app_commands.describe(
         member='Eine Person die die Vegan-Rolle bekommen soll',
         reason='Der Grund warum die Person die Vegan-Rolle bekommen soll',
     )
     @app_commands.guild_only()
+    @app_commands.checks.has_role(TEAM_ROLE_ID)
     async def vegan(self, ctx: commands.Context, member: discord.Member, reason: str):
         vegan_role = discord.utils.get(ctx.interaction.guild.roles, id=VEGAN_ROLE_ID)
         non_vegan_role = discord.utils.get(ctx.interaction.guild.roles, id=NON_VEGAN_ROLE_ID)
