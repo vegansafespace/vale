@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from src.helpers.env import VEGAN_ROLE_ID, REPORTS_CHANNEL_ID
+from src.modals.test_modal import TestModal
 from src.vale import Vale
 
 
@@ -79,15 +80,10 @@ class UserUtils(commands.Cog):
     @app_commands.command(
         description='Einfach ein Test',
     )
-    @app_commands.describe(
-        user=f'Eine Person, die erwähnt werden soll'
-    )
     @app_commands.guild_only()
     @app_commands.checks.has_role(VEGAN_ROLE_ID)
-    async def test(self, interaction: discord.Interaction, user: discord.User):
-        await interaction.response.send_message('Du hast {} erwähnt!'.format(
-            user.mention,
-        ), ephemeral=True)
+    async def test(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(TestModal())
 
 
 async def setup(bot: Vale):
