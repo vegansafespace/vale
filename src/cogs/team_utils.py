@@ -86,11 +86,11 @@ class TeamUtils(commands.Cog):
     )
     @app_commands.guild_only()
     @app_commands.checks.has_role(TEAM_ROLE_ID)
-    async def vegan(self, ctx: commands.Context, member: discord.Member, reason: str):
-        vegan_role = discord.utils.get(ctx.interaction.guild.roles, id=VEGAN_ROLE_ID)
-        non_vegan_role = discord.utils.get(ctx.interaction.guild.roles, id=NON_VEGAN_ROLE_ID)
+    async def vegan(self, interaction: discord.Interaction, member: discord.Member, reason: str):
+        vegan_role = discord.utils.get(interaction.guild.roles, id=VEGAN_ROLE_ID)
+        non_vegan_role = discord.utils.get(interaction.guild.roles, id=NON_VEGAN_ROLE_ID)
 
-        await self._assign_initial_role(ctx.interaction, member, vegan_role, non_vegan_role, reason)
+        await self._assign_initial_role(interaction, member, vegan_role, non_vegan_role, reason)
 
     async def _assign_initial_role(
             self,
