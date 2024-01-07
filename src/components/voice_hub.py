@@ -74,7 +74,8 @@ class VoiceHub:
                 )
 
                 # Move user into the new channel
-                await member.move_to(selected_channel)
+                if member.voice is not None and member.voice.channel is not None:
+                    await member.move_to(selected_channel)
 
                 # Delete message
                 await i2.message.delete()
@@ -180,7 +181,9 @@ class VoiceHub:
             overwrites=overwrites,
         )
 
-        await member.move_to(voice_channel)
+        # Move user into the new channel
+        if member.voice is not None and member.voice.channel is not None:
+            await member.move_to(voice_channel)
 
     async def on_leave_hub_channel(
             self,

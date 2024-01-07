@@ -73,8 +73,11 @@ class Application:
                 overwrite=can_see_overwrite,
             )
 
-            await member.move_to(voice_channel)
-            await i.user.move_to(voice_channel)
+            if member.voice is not None and member.voice.channel is not None:
+                await member.move_to(voice_channel)
+
+            if i.user.voice is not None and i.user.voice.channel is not None:
+                await i.user.move_to(voice_channel)
 
         button.callback = button_callback
 
