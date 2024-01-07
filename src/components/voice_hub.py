@@ -192,5 +192,8 @@ class VoiceHub:
         if before.channel.name.startswith(VOICE_HUB_CHANNEL_PREFIX):
             # Check if user is the only one left in the channel
             if len(before.channel.members) == 0:
-                # Delete channel
-                await before.channel.delete()
+                try:
+                    # Delete channel
+                    await before.channel.delete()
+                except discord.errors.NotFound:
+                    pass
