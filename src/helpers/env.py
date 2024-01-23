@@ -28,7 +28,9 @@ NEW_USER_ROLE_ID: int = int(os.getenv('NEW_USER_ROLE_ID'))
 SUPPORT_ROLE_ID: int = int(os.getenv('SUPPORT_ROLE_ID'))
 VEGAN_ROLE_ID: int = int(os.getenv('VEGAN_ROLE_ID'))
 NON_VEGAN_ROLE_ID: int = int(os.getenv('NON_VEGAN_ROLE_ID'))
+OUTREACH_ROLE_ID: int = int(os.getenv('OUTREACH_ROLE_ID'))
 
 TEAM_BANS_CHANNEL_ID: int = int(os.getenv('TEAM_BANS_CHANNEL_ID'))
 
 MAIN_CHAT_CHANNEL_ID: int = int(os.getenv('MAIN_CHAT_CHANNEL_ID'))
+NON_VEGAN_MAIN_CHAT_CHANNEL_ID: int = int(os.getenv('NON_VEGAN_MAIN_CHAT_CHANNEL_ID'))

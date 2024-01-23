@@ -6,7 +6,8 @@ from discord.ext import commands
 from discord.utils import MISSING
 
 from src.helpers.env import VEGAN_ROLE_ID, NON_VEGAN_ROLE_ID, TEAM_ROLE_ID, NEW_USER_ROLE_ID, \
-    ROLE_JUSTIFICATION_CHANNEL_ID, MAIN_CHAT_CHANNEL_ID, TEAM_BANS_CHANNEL_ID
+    ROLE_JUSTIFICATION_CHANNEL_ID, MAIN_CHAT_CHANNEL_ID, TEAM_BANS_CHANNEL_ID, NON_VEGAN_MAIN_CHAT_CHANNEL_ID, \
+    OUTREACH_ROLE_ID
 from src.vale import Vale
 
 
@@ -92,6 +93,21 @@ class TeamUtils(commands.Cog):
 
         await self._assign_initial_role(interaction, member, vegan_role, non_vegan_role, reason)
 
+    @app_commands.command(
+        description='Einer Person die "Auf dem Weg"-Rolle vergeben',
+    )
+    @app_commands.describe(
+        member='Eine Person die die "Auf dem Weg"-Rolle bekommen soll',
+        reason='Der Grund warum die Person die "Auf dem Weg"-Rolle bekommen soll',
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(TEAM_ROLE_ID)
+    async def non_vegan(self, interaction: discord.Interaction, member: discord.Member, reason: str):
+        non_vegan_role = discord.utils.get(interaction.guild.roles, id=NON_VEGAN_ROLE_ID)
+        vegan_role = discord.utils.get(interaction.guild.roles, id=VEGAN_ROLE_ID)
+
+        await self._assign_initial_role(interaction, member, non_vegan_role, vegan_role, reason)
+
     async def _assign_initial_role(
             self,
             interaction: discord.Interaction,
@@ -160,7 +176,7 @@ class TeamUtils(commands.Cog):
         )
 
         embed = discord.Embed(
-            title='{} freigeschaltet'.format(member.display_name),
+            title='Rollenvergabe {}'.format(member.display_name),
             description=description,
             timestamp=interaction.created_at,
             colour=assigned_role.colour
@@ -180,6 +196,15 @@ class TeamUtils(commands.Cog):
             member: discord.Member,
             assigned_role: discord.Role,
     ):
+        if assigned_role.id == VEGAN_ROLE_ID:
+            await self._welcome_vegan(assigned_role, executor, interaction, member)
+            return
+
+        if assigned_role.id == NON_VEGAN_ROLE_ID:
+            await self._welcome_non_vegan(assigned_role, executor, interaction, member)
+            return
+
+    async def _welcome_vegan(self, assigned_role, executor, interaction, member):
         embed = discord.Embed(
             title='Willkommen {}!'.format(member.display_name),
             description='{} wurde soeben freigeschaltet und ist jetzt Teil der Vegan Safespace Community!'.format(
@@ -191,7 +216,7 @@ class TeamUtils(commands.Cog):
         embed.set_thumbnail(url=member.display_avatar.url)
 
         embed.set_footer(
-            text='Von {} freigeschaltet!'.format(executor.display_name),
+            text='Von {} freigeschaltet'.format(executor.display_name),
             icon_url=executor.display_avatar.url,
         )
 
@@ -200,6 +225,32 @@ class TeamUtils(commands.Cog):
 
         await main_chat_channel.send(
             content="Willkommen {} auf Vegan Safespace!".format(member.mention),
+            embed=embed,
+        )
+
+    async def _welcome_non_vegan(self, assigned_role, executor, interaction, member):
+        embed = discord.Embed(
+            title='Hey {}! Willkommen!'.format(member.display_name),
+            description='{} wurde soeben freigeschaltet für den "Auf dem Weg"-Space freigeschaltet!'.format(
+                member.display_name,
+            ),
+            colour=assigned_role.colour,
+        )
+
+        embed.set_thumbnail(url=member.display_avatar.url)
+
+        embed.set_footer(
+            text='Rolle von {} vergeben'.format(executor.display_name),
+            icon_url=executor.display_avatar.url,
+        )
+
+        # Welcome member to everyone in the non-vegan channel
+        non_vegan_main_chat_channel = interaction.guild.get_channel(NON_VEGAN_MAIN_CHAT_CHANNEL_ID)
+
+        outreach_role = discord.utils.get(member.guild.roles, id=OUTREACH_ROLE_ID)
+
+        await non_vegan_main_chat_channel.send(
+            content="Hey {}! Willkommen! ({})".format(member.mention, outreach_role.mention),
             embed=embed,
         )
 
