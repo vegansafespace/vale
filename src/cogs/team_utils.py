@@ -232,7 +232,7 @@ class TeamUtils(commands.Cog):
     async def _welcome_non_vegan(self, assigned_role, executor, interaction, member):
         embed = discord.Embed(
             title='Hey {}! Willkommen!'.format(member.display_name),
-            description='{} wurde soeben freigeschaltet für den "Auf dem Weg"-Space freigeschaltet!'.format(
+            description='{} wurde soeben für den "Auf dem Weg"-Space freigeschaltet!'.format(
                 member.display_name,
             ),
             colour=assigned_role.colour,
