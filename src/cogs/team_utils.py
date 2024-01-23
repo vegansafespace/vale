@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 import discord
 from discord import app_commands, User, Member
@@ -94,15 +94,16 @@ class TeamUtils(commands.Cog):
         await self._assign_initial_role(interaction, member, vegan_role, non_vegan_role, reason)
 
     @app_commands.command(
+        name='non-vegan',
         description='Einer Person die "Auf dem Weg"-Rolle vergeben',
     )
     @app_commands.describe(
         member='Eine Person die die "Auf dem Weg"-Rolle bekommen soll',
-        reason='Der Grund warum die Person die "Auf dem Weg"-Rolle bekommen soll',
+        reason='Optionaler Grund warum die Person die "Auf dem Weg"-Rolle bekommen soll',
     )
     @app_commands.guild_only()
     @app_commands.checks.has_role(TEAM_ROLE_ID)
-    async def non_vegan(self, interaction: discord.Interaction, member: discord.Member, reason: str):
+    async def non_vegan(self, interaction: discord.Interaction, member: discord.Member, reason: Optional[str] = None):
         non_vegan_role = discord.utils.get(interaction.guild.roles, id=NON_VEGAN_ROLE_ID)
         vegan_role = discord.utils.get(interaction.guild.roles, id=VEGAN_ROLE_ID)
 
@@ -114,7 +115,7 @@ class TeamUtils(commands.Cog):
             member: discord.Member,
             role_to_assign: discord.Role,
             role_to_remove: discord.Role,
-            reason: str,
+            reason: Optional[str] = None,
     ):
         executor = interaction.user
 
@@ -160,7 +161,7 @@ class TeamUtils(commands.Cog):
             executor: Union[User, Member],
             member: discord.Member,
             assigned_role: discord.Role,
-            reason: str,
+            reason: Optional[str] = None,
     ):
         description = '{} ({}, {}) hat von {} ({}, {}) die Rolle {} zugewiesen bekommen.\n\n' \
                       '**Grund:**\n' \
@@ -172,7 +173,7 @@ class TeamUtils(commands.Cog):
             executor.display_name,
             executor.id,
             assigned_role.mention,
-            reason
+            reason or 'Kein Grund angegeben.'
         )
 
         embed = discord.Embed(
