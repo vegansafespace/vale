@@ -2,6 +2,7 @@ from typing import Union, Optional
 
 import discord
 from discord import app_commands, User, Member
+from discord.app_commands import CommandInvokeError
 from discord.ext import commands
 from discord.utils import MISSING
 
@@ -74,9 +75,43 @@ class TeamUtils(commands.Cog):
 
         await bans_channel.send(embed=embed)
 
-        await interaction.response.send_message('Du hast {} gebannt!'.format(
+        has_sent_dm = await self._send_ban_dm(interaction, user, reason)
+
+        await interaction.response.send_message('Du hast {} gebannt! ({})'.format(
             user.mention,
+            has_sent_dm and 'DM gesendet.' or 'Keine DM gesendet.'
         ), ephemeral=True)
+
+    async def _send_ban_dm(self, interaction: discord.Interaction, user: discord.User, reason: str) -> bool:
+        try:
+            # Check if user is member of guild
+            member = interaction.guild.get_member(user.id)
+
+            if member is None:
+                return False
+
+            dm_channel = await member.create_dm()
+
+            dm_embed = discord.Embed(
+                title=f'{interaction.guild.name} - Ausschluss',
+                description=reason,
+                timestamp=interaction.created_at
+            )
+
+            if interaction.guild.icon is not None:
+                dm_embed.set_thumbnail(url=interaction.guild.icon.url)
+
+            await dm_channel.send(embed=dm_embed)
+
+            return True
+        except CommandInvokeError:
+            # User may not be in the guild, is not a member or has DMs disabled
+            pass
+        except Exception as e:
+            print(e)
+            pass
+
+        return False
 
     @app_commands.command(
         description='Einer Person die Vegan-Rolle vergeben',
