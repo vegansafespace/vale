@@ -1,6 +1,3 @@
-import re
-from typing import Dict, List
-
 import discord
 from dependency_injector.wiring import inject
 from discord.ext import commands, tasks
@@ -18,58 +15,8 @@ class Tasks(commands.Cog):
 
         self.voice_category = voice_category
 
-        self.check_voice_channels.start()
         self.check_no_roles_assigned.start()
 
-    @tasks.loop(seconds=10)
-    async def check_voice_channels(self):
-        for guild in self.bot.guilds:
-            # Get voice category by id VOICE_CATEGORY_ID
-            category = discord.utils.get(guild.categories, id=VOICE_CATEGORY_ID)
-
-            if category is None:
-                continue
-
-            voice_channels = [channel for channel in category.channels if
-                              isinstance(channel, discord.VoiceChannel) and "#" in channel.name]
-
-            # Gruppiere Kanäle basierend auf dem Namen vor dem "#"
-            grouped_channels: Dict[str, List[discord.VoiceChannel]] = {}
-            for channel in voice_channels:
-                prefix = channel.name.split("#")[0].strip()
-                if prefix not in grouped_channels:
-                    grouped_channels[prefix] = []
-                grouped_channels[prefix].append(channel)
-
-            for prefix, channels in grouped_channels.items():
-                channels.sort(key=lambda x: int(re.search(r"#(\d+)", x.name).group(1)))  # Sortiere nach der Nummer
-
-                for i, channel in enumerate(channels):
-                    if len(channel.members) == 0 and len(channels) > 1 and i != 0:
-                        # Do only delete channel if channel with i - 1 exists and has members
-                        if len(channels[i - 1].members) == 0:
-                            await channel.delete()
-                    elif len(channel.members) != 0 and i == len(channels) - 1:
-                        highest_number = int(re.search(r"#(\d+)", channels[-1].name).group(1))
-                        new_channel_name = channel.name.replace(f"#{highest_number}", f"#{highest_number + 1}")
-
-                        # Create the new channel
-                        new_channel = await category.create_voice_channel(
-                            new_channel_name,
-                            user_limit=channel.user_limit,
-                            overwrites=channel.overwrites,
-                            position=channel.position + 1,
-                        )
-
-                        # Adjust the position of the new channel
-                        await new_channel.edit(
-                            position=channel.position + 1,
-                        )
-
-                        await self.voice_category.rearrange_voice_channels(
-                            bot=self.bot,
-                            channel_prefix=new_channel_name.split("#")[0].strip(),
-                        )
 
     @tasks.loop(seconds=10)
     async def check_no_roles_assigned(self):

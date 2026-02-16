@@ -47,11 +47,11 @@ class Events(commands.Cog):
 
         # Check if user joined any of the voice channels in the voice category
         if after.channel is not None and after.channel.category.id == VOICE_CATEGORY_ID:
-            await self.voice_category.on_join(member, before, after)
+            await self.voice_category.on_join(member, before, after, self.bot)
 
         # Check if user left any of the voice channels in the voice category
         if before.channel is not None and before.channel.category.id == VOICE_CATEGORY_ID:
-            await self.voice_category.on_leave(member, before, after)
+            await self.voice_category.on_leave(member, before, after, self.bot)
 
         # Check if user left the application waiting room
         if before.channel is not None and before.channel.id == APPLICATION_VOICE_WAITING_CHANNEL_ID:

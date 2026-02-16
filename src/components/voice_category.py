@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Dict, List
 
 import discord
@@ -11,7 +12,8 @@ class VoiceCategory:
             self,
             member: discord.Member,
             before: discord.VoiceState,
-            after: discord.VoiceState
+            after: discord.VoiceState,
+            bot: Vale
     ):
         # Make sure channel name contains a "#"
         if "#" not in after.channel.name:
@@ -24,11 +26,14 @@ class VoiceCategory:
             delete_after=30 * 60.0  # 30 minutes
         )
 
+        await self._check_scaling(after.channel.category, bot)
+
     async def on_leave(
             self,
             member: discord.Member,
             before: discord.VoiceState,
-            after: discord.VoiceState
+            after: discord.VoiceState,
+            bot: Vale
     ):
         # Make sure channel name contains a "#"
         if "#" not in before.channel.name:
@@ -40,6 +45,53 @@ class VoiceCategory:
             silent=True,
             delete_after=30 * 60.0  # 30 minutes
         )
+
+        await self._check_scaling(before.channel.category, bot)
+
+    async def _check_scaling(self, category: discord.CategoryChannel, bot: Vale):
+        if category is None or category.id != VOICE_CATEGORY_ID:
+            return
+
+        voice_channels = [channel for channel in category.channels if
+                          isinstance(channel, discord.VoiceChannel) and "#" in channel.name]
+
+        # Group channels based on the name before "#"
+        grouped_channels: Dict[str, List[discord.VoiceChannel]] = {}
+        for channel in voice_channels:
+            prefix = channel.name.split("#")[0].strip()
+            if prefix not in grouped_channels:
+                grouped_channels[prefix] = []
+            grouped_channels[prefix].append(channel)
+
+        for prefix, channels in grouped_channels.items():
+            channels.sort(key=lambda x: int(re.search(r"#(\d+)", x.name).group(1)))  # Sortiere nach der Nummer
+
+            for i, channel in enumerate(channels):
+                if len(channel.members) == 0 and len(channels) > 1 and i != 0:
+                    # Do only delete channel if channel with i - 1 exists and has members
+                    if len(channels[i - 1].members) == 0:
+                        await channel.delete()
+                elif len(channel.members) != 0 and i == len(channels) - 1:
+                    highest_number = int(re.search(r"#(\d+)", channels[-1].name).group(1))
+                    new_channel_name = channel.name.replace(f"#{highest_number}", f"#{highest_number + 1}")
+
+                    # Create the new channel
+                    new_channel = await category.create_voice_channel(
+                        new_channel_name,
+                        user_limit=channel.user_limit,
+                        overwrites=channel.overwrites,
+                        position=channel.position + 1,
+                    )
+
+                    # Adjust the position of the new channel
+                    await new_channel.edit(
+                        position=channel.position + 1,
+                    )
+
+                    await self.rearrange_voice_channels(
+                        bot=bot,
+                        channel_prefix=new_channel_name.split("#")[0].strip(),
+                    )
 
     async def rearrange_voice_channels(self, bot: Vale, channel_prefix: Optional[str]):
         """
