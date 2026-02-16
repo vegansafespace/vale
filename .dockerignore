@@ -2,7 +2,7 @@
 **
 
 # ... except for dependencies and source
-!Pipfile
-!Pipfile.lock
+!pyproject.toml
+!uv.lock
 #!.env
 !src/
