@@ -18,7 +18,7 @@ class Tasks(commands.Cog):
         self.check_no_roles_assigned.start()
 
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(hours=24)
     async def check_no_roles_assigned(self):
         # Assign @New User role to all users without any role
         for guild in self.bot.guilds:
