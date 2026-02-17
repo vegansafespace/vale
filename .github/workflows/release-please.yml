@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      pr: ${{ steps.release.outputs.pr }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v6.0.1
+
+      - uses: googleapis/release-please-action@v4.4.0
+        id: release
+        with:
+          token: ${{ secrets.RELEASER_PAT }}
+          target-branch: ${{ github.ref_name }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    environment: Production
+    steps:
+      - uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd ./bot/prod
+
+            # Make sure we’re on the right repo and have the tag
+            git fetch --prune --tags origin
+
+            # Checkout the release tag from release-please
+            TAG="${{ needs.release-please.outputs.tag_name }}"
+            git -c advice.detachedHead=false checkout -f "$TAG"
+
+            # Build new Docker Image
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose build --no-cache
+
+            # Restart Compose Services
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose up -d --force-recreate
