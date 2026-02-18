@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/vegansafespace/vale/compare/v0.3.0...v0.4.0) (2026-02-18)
+
+
+### Features
+
+* **containers:** inject logger into bot instance ([be09a1f](https://github.com/vegansafespace/vale/commit/be09a1fdfa4c779c00115d168735dd2282fc0623))
+
 ## [0.3.0](https://github.com/vegansafespace/vale/compare/v0.2.0...v0.3.0) (2026-02-18)
 
 
