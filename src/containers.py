@@ -1,5 +1,9 @@
-from dependency_injector import containers, providers
+from logging import Logger
 
+from dependency_injector import containers, providers
+from dependency_injector.providers import Singleton
+
+from logger import logger as log
 from src.components.application import Application
 from src.components.application_service import ApplicationService
 from src.components.voice_category import VoiceCategory
@@ -9,6 +13,9 @@ from src.vale import Vale
 
 
 class Container(containers.DeclarativeContainer):
+    # logger
+    logger: Singleton[Logger] = providers.Singleton(log)
+
     # db
     db_client = providers.Singleton(create_mongodb_client)
 

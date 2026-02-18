@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+DEBUG: bool = os.getenv('DEBUG', 'false').lower() == 'true'
+
 MONGO_USERNAME: str = os.getenv('MONGO_USERNAME')
 MONGO_PASSWORD: str = os.getenv('MONGO_PASSWORD')
 MONGO_DATABASE: str = os.getenv('MONGO_DATABASE', 'vale')

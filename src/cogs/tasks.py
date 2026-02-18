@@ -1,3 +1,5 @@
+from logging import Logger
+
 import discord
 from dependency_injector.wiring import inject
 from discord.ext import commands, tasks
@@ -10,11 +12,10 @@ from src.vale import Vale
 
 class Tasks(commands.Cog):
     @inject
-    def __init__(self, bot: Vale, voice_category: VoiceCategory):
+    def __init__(self, logger: Logger, bot: Vale, voice_category: VoiceCategory):
+        self.logger = logger
         self.bot = bot
-
         self.voice_category = voice_category
-
         self.check_no_roles_assigned.start()
 
 
@@ -34,13 +35,14 @@ class Tasks(commands.Cog):
                     count += 1
 
             if count > 0:
-                print(f'Assigned "@{new_user_role.name}" to {count} users.')
+                self.logger.info(f'Assigned "@{new_user_role.name}" to {count} users.')
 
 
 async def setup(bot: Vale):
     await bot.add_cog(
         Tasks(
-            bot,
+            logger=container.logger(),
+            bot=bot,
             voice_category=container.voice_category(),
         )
     )

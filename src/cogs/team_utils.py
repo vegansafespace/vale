@@ -1,6 +1,8 @@
+from logging import Logger
 from typing import Union, Optional
 
 import discord
+from dependency_injector.wiring import inject
 from discord import app_commands, User, Member
 from discord.app_commands import CommandInvokeError
 from discord.ext import commands
@@ -9,11 +11,14 @@ from discord.utils import MISSING
 from src.helpers.env import VEGAN_ROLE_ID, NON_VEGAN_ROLE_ID, TEAM_ROLE_ID, NEW_USER_ROLE_ID, \
     ROLE_JUSTIFICATION_CHANNEL_ID, MAIN_CHAT_CHANNEL_ID, TEAM_BANS_CHANNEL_ID, NON_VEGAN_MAIN_CHAT_CHANNEL_ID, \
     OUTREACH_ROLE_ID
+from src.main import container
 from src.vale import Vale
 
 
 class TeamUtils(commands.Cog):
-    def __init__(self, bot: Vale):
+    @inject
+    def __init__(self, logger: Logger, bot: Vale):
+        self.logger = logger
         self.bot = bot
 
     @app_commands.command(
@@ -108,7 +113,7 @@ class TeamUtils(commands.Cog):
             # User may not be in the guild, is not a member or has DMs disabled
             pass
         except Exception as e:
-            print(e)
+            self.logger.error(e)
             pass
 
         return False
@@ -294,6 +299,7 @@ class TeamUtils(commands.Cog):
 async def setup(bot: Vale):
     await bot.add_cog(
         TeamUtils(
-            bot,
+            logger=container.logger(),
+            bot=bot,
         )
     )

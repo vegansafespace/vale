@@ -1,3 +1,4 @@
+from logging import Logger
 from datetime import datetime
 
 import discord
@@ -7,6 +8,7 @@ from discord.ext import commands
 from dependency_injector.wiring import Provide, inject
 
 from src.helpers.env import NEW_USER_ROLE_ID, VEGAN_ROLE_ID, REPORTS_CHANNEL_ID
+from src.main import container
 from src.modals.application_modal import ApplicationModal
 from src.modals.test_modal import TestModal
 from src.components.application_service import ApplicationService
@@ -17,9 +19,11 @@ class UserUtils(commands.Cog):
     @inject
     def __init__(
             self,
+            logger: Logger,
             bot: Vale,
             application_service: ApplicationService
     ):
+        self.logger = logger
         self.bot = bot
         self.application_service = application_service
 
@@ -115,6 +119,8 @@ class UserUtils(commands.Cog):
 async def setup(bot: Vale):
     await bot.add_cog(
         UserUtils(
-            bot,
+            logger=container.logger(),
+            bot=bot,
+            application_service=container.application_service(),
         )
     )

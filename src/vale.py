@@ -1,3 +1,4 @@
+from logging import Logger
 from pathlib import Path
 
 import discord
@@ -5,7 +6,7 @@ from discord.ext import commands
 
 
 class Vale(commands.Bot):
-    def __init__(self):
+    def __init__(self, logger: Logger):
         intents = discord.Intents.default()
         intents.guilds = True
         intents.guild_messages = True
@@ -23,12 +24,13 @@ class Vale(commands.Bot):
 
         super().__init__(command_prefix='!', intents=intents)
 
+        self.logger = logger
+
     async def on_ready(self):
         guild_count = len(self.guilds)
 
-        print(
-            f"Logged in as {self.user} (ID: {self.user.id})"
-            f" in {guild_count} {'guild' if guild_count == 1 else 'guilds'}"
+        self.logger.info(
+            f"Logged in as {self.user} (ID: {self.user.id}) in {guild_count} {'guild' if guild_count == 1 else 'guilds'}"
         )
 
     async def setup_hook(self):
@@ -36,7 +38,7 @@ class Vale(commands.Bot):
         await self.load_cogs()
 
     async def load_cogs(self):
-        print('Loading cogs...')
+        self.logger.info('Loading cogs...')
 
         for path in Path('src/cogs').glob('*.py'):
             # Remove the '.py' from the file name
@@ -47,6 +49,6 @@ class Vale(commands.Bot):
 
             try:
                 await self.load_extension(cog_import_path)
-                print(f'Successfully loaded cog: {cog}')
+                self.logger.info(f'Successfully loaded cog: {cog}')
             except Exception as e:
-                print(f'Failed to load cog {cog}: {e}')
+                self.logger.error(f'Failed to load cog {cog}: {e}')

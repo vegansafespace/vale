@@ -1,3 +1,5 @@
+from logging import Logger
+
 import discord
 from dependency_injector.wiring import inject
 from discord.ext import commands
@@ -13,16 +15,17 @@ from src.vale import Vale
 
 class Events(commands.Cog):
     @inject
-    def __init__(self, bot: Vale, application: Application, voice_category: VoiceCategory, voice_hub: VoiceHub):
+    def __init__(self, logger: Logger, bot: Vale, application: Application, voice_category: VoiceCategory, voice_hub: VoiceHub):
         self.bot = bot
 
+        self.logger = logger
         self.application = application
         self.voice_category = voice_category
         self.voice_hub = voice_hub
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        print(f'{member} (ID: {member.id}) joined the server!')
+        self.logger.info(f'{member} (ID: {member.id}) joined the server!')
 
         new_user_role = discord.utils.get(member.guild.roles, id=NEW_USER_ROLE_ID)
 
@@ -78,7 +81,8 @@ class Events(commands.Cog):
 async def setup(bot: Vale):
     await bot.add_cog(
         Events(
-            bot,
+            logger=container.logger(),
+            bot=bot,
             application=container.application(),
             voice_category=container.voice_category(),
             voice_hub=container.voice_hub(),
