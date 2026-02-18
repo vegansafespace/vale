@@ -14,7 +14,7 @@ from src.vale import Vale
 
 class Container(containers.DeclarativeContainer):
     # logger
-    logger: Singleton[Logger] = providers.Singleton(log)
+    logger: providers.Object[Logger] = providers.Object(log)
 
     # db
     db_client = providers.Singleton(create_mongodb_client)
