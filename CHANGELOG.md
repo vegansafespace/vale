@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/vegansafespace/vale/compare/v0.2.0...v0.3.0) (2026-02-18)
+
+
+### Features
+
+* **logging:** integrate centralized logging system ([d55d04b](https://github.com/vegansafespace/vale/commit/d55d04b89bf0f003c957c8a6c80f9667a36ef79f))
+
 ## [0.2.0](https://github.com/vegansafespace/vale/compare/v0.1.0...v0.2.0) (2026-02-18)
 
 
