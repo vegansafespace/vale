@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/vegansafespace/vale/compare/v0.4.0...v0.4.1) (2026-02-18)
+
+
+### Code Refactoring
+
+* **containers:** update logger provider from Singleton to Object ([85b4806](https://github.com/vegansafespace/vale/commit/85b480646a6cf476a30c03848d9742fa1ce0f9a4))
+
 ## [0.4.0](https://github.com/vegansafespace/vale/compare/v0.3.0...v0.4.0) (2026-02-18)
 
 
