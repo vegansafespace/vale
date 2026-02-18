@@ -3,7 +3,7 @@ from logging import Logger
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton
 
-from logger import logger as log
+from src.logger import logger as log
 from src.components.application import Application
 from src.components.application_service import ApplicationService
 from src.components.voice_category import VoiceCategory
@@ -20,7 +20,7 @@ class Container(containers.DeclarativeContainer):
     db_client = providers.Singleton(create_mongodb_client)
 
     # bot
-    bot = providers.Singleton(Vale)
+    bot = providers.Singleton(Vale, logger=logger)
 
     # components
     application_service = providers.Singleton(ApplicationService, db_client=db_client)
