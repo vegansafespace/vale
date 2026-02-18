@@ -9,7 +9,7 @@ services:
     env_file: .env
     restart: always
     environment:
-      - MONGO_HOST="mongo"
+      - MONGO_HOST=mongo
 
   mongo:
     image: mongo:latest
