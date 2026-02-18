@@ -23,7 +23,12 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         print(f'{member} (ID: {member.id}) joined the server!')
+
         new_user_role = discord.utils.get(member.guild.roles, id=NEW_USER_ROLE_ID)
+
+        if new_user_role is None:
+            return
+
         await member.add_roles(new_user_role)
 
     @commands.Cog.listener()

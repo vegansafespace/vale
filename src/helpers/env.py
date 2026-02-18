@@ -4,6 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+MONGO_USERNAME: str = os.getenv('MONGO_USERNAME')
+MONGO_PASSWORD: str = os.getenv('MONGO_PASSWORD')
+MONGO_DATABASE: str = os.getenv('MONGO_DATABASE', 'vale')
+MONGO_HOST: str = os.getenv('MONGO_HOST', 'localhost')
+MONGO_PORT: int = int(os.getenv('MONGO_PORT', 27017))
+
 DISCORD_TOKEN: str = os.getenv('DISCORD_TOKEN')
 DISCORD_GUILD: int = int(os.getenv('DISCORD_GUILD'))
 
@@ -31,6 +37,7 @@ NON_VEGAN_ROLE_ID: int = int(os.getenv('NON_VEGAN_ROLE_ID'))
 OUTREACH_ROLE_ID: int = int(os.getenv('OUTREACH_ROLE_ID'))
 
 TEAM_BANS_CHANNEL_ID: int = int(os.getenv('TEAM_BANS_CHANNEL_ID'))
+TEAM_APPLICATIONS_CHANNEL_ID: int = int(os.getenv('TEAM_APPLICATIONS_CHANNEL_ID'))
 
 MAIN_CHAT_CHANNEL_ID: int = int(os.getenv('MAIN_CHAT_CHANNEL_ID'))
 NON_VEGAN_MAIN_CHAT_CHANNEL_ID: int = int(os.getenv('NON_VEGAN_MAIN_CHAT_CHANNEL_ID'))

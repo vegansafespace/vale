@@ -4,14 +4,24 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from src.helpers.env import VEGAN_ROLE_ID, REPORTS_CHANNEL_ID
+from dependency_injector.wiring import Provide, inject
+
+from src.helpers.env import NEW_USER_ROLE_ID, VEGAN_ROLE_ID, REPORTS_CHANNEL_ID
+from src.modals.application_modal import ApplicationModal
 from src.modals.test_modal import TestModal
+from src.components.application_service import ApplicationService
 from src.vale import Vale
 
 
 class UserUtils(commands.Cog):
-    def __init__(self, bot: Vale):
+    @inject
+    def __init__(
+            self,
+            bot: Vale,
+            application_service: ApplicationService
+    ):
         self.bot = bot
+        self.application_service = application_service
 
         self.bot.tree.add_command(
             app_commands.ContextMenu(
@@ -84,6 +94,22 @@ class UserUtils(commands.Cog):
     @app_commands.checks.has_role(VEGAN_ROLE_ID)
     async def test(self, interaction: discord.Interaction):
         await interaction.response.send_modal(TestModal())
+
+
+    @app_commands.command(
+        description='Bewerbe dich für Vegan Safespace',
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(NEW_USER_ROLE_ID)
+    async def apply(self, interaction: discord.Interaction):
+        if await self.application_service.has_application(interaction.user.id):
+            await interaction.response.send_message(
+                f'Du hast bereits eine Bewerbung eingereicht. Bitte warte auf eine Antwort des Teams.',
+                ephemeral=True
+            )
+            return
+
+        await interaction.response.send_modal(ApplicationModal(application_service=self.application_service))
 
 
 async def setup(bot: Vale):
