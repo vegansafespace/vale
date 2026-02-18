@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/vegansafespace/vale/compare/v0.4.1...v0.4.2) (2026-02-18)
+
+
+### Code Refactoring
+
+* **env:** centralize environment variable parsing ([661f0f4](https://github.com/vegansafespace/vale/commit/661f0f45e4f89929065d949bff3e2fc779295cb0))
+
 ## [0.4.1](https://github.com/vegansafespace/vale/compare/v0.4.0...v0.4.1) (2026-02-18)
 
 
