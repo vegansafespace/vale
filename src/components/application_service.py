@@ -1,3 +1,4 @@
+from typing import Union, Optional
 from motor.motor_asyncio import AsyncIOMotorClient
 import discord
 from src.helpers.env import MONGO_DATABASE, TEAM_APPLICATIONS_CHANNEL_ID
@@ -25,7 +26,7 @@ class ApplicationService:
         return str(result.inserted_id)
 
 
-    async def notify_team(self, guild: discord.Guild, user: discord.User, data: dict) -> discord.Message | None:
+    async def notify_team(self, guild: discord.Guild, user: discord.User, data: dict) -> Optional[discord.Message]:
         channel = guild.get_channel(TEAM_APPLICATIONS_CHANNEL_ID)
 
         if not channel:
@@ -51,7 +52,7 @@ class ApplicationService:
     async def delete_application(self, user_id: int):
         await self.collection.delete_one({"user_id": user_id})
 
-    async def revoke_application(self, guild: discord.Guild, user: discord.User | discord.Member, reason: str = None) -> bool:
+    async def revoke_application(self, guild: discord.Guild, user: Union[discord.User, discord.Member], reason: str = None) -> bool:
         application = await self.get_application(user.id)
 
         if not application:
