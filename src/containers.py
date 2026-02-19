@@ -23,7 +23,7 @@ class Container(containers.DeclarativeContainer):
     bot = providers.Singleton(Vale, logger=logger)
 
     # components
-    application_service = providers.Singleton(ApplicationService, db_client=db_client)
+    application_service = providers.Singleton(ApplicationService, db_client=db_client, logger=logger)
     application = providers.Singleton(Application)
     voice_category = providers.Singleton(VoiceCategory)
     voice_hub = providers.Singleton(VoiceHub)
