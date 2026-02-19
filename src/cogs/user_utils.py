@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from dependency_injector.wiring import Provide, inject
 
-from src.helpers.env import NEW_USER_ROLE_ID, VEGAN_ROLE_ID, REPORTS_CHANNEL_ID
+from src.helpers.env import NEW_USER_ROLE_ID, VEGAN_ROLE_ID, REPORTS_CHANNEL_ID, TEAM_APPLICATIONS_CHANNEL_ID
 from src.main import container
 from src.modals.application_modal import ApplicationModal
 from src.modals.test_modal import TestModal
@@ -114,6 +114,28 @@ class UserUtils(commands.Cog):
             return
 
         await interaction.response.send_modal(ApplicationModal(application_service=self.application_service))
+
+
+    @app_commands.command(
+        name='revoke-application',
+        description='Ziehe deine Bewerbung zurück',
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(NEW_USER_ROLE_ID)
+    async def revoke_application(self, interaction: discord.Interaction):
+        revoked = await self.application_service.revoke_application(interaction.guild, interaction.user)
+
+        if not revoked:
+            await interaction.response.send_message(
+                'Du hast keine offene Bewerbung.',
+                ephemeral=True
+            )
+            return
+
+        await interaction.response.send_message(
+            'Deine Bewerbung wurde erfolgreich zurückgezogen.',
+            ephemeral=True
+        )
 
 
 async def setup(bot: Vale):

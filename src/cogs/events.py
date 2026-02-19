@@ -5,6 +5,7 @@ from dependency_injector.wiring import inject
 from discord.ext import commands
 
 from src.components.application import Application
+from src.components.application_service import ApplicationService
 from src.components.voice_category import VoiceCategory
 from src.components.voice_hub import VoiceHub
 from src.helpers.env import NEW_USER_ROLE_ID, VOICE_HUB_MOVE_ME_CHANNEL_ID, VOICE_HUB_CREATE_CHANNEL_ID, \
@@ -15,11 +16,12 @@ from src.vale import Vale
 
 class Events(commands.Cog):
     @inject
-    def __init__(self, logger: Logger, bot: Vale, application: Application, voice_category: VoiceCategory, voice_hub: VoiceHub):
+    def __init__(self, logger: Logger, bot: Vale, application: Application, application_service: ApplicationService, voice_category: VoiceCategory, voice_hub: VoiceHub):
         self.bot = bot
 
         self.logger = logger
         self.application = application
+        self.application_service = application_service
         self.voice_category = voice_category
         self.voice_hub = voice_hub
 
@@ -33,6 +35,16 @@ class Events(commands.Cog):
             return
 
         await member.add_roles(new_user_role)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+        self.logger.info(f'{member} (ID: {member.id}) left the server!')
+
+        await self.application_service.revoke_application(
+            member.guild,
+            member,
+            reason="Die Person hat den Server verlassen."
+        )
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState,
@@ -84,6 +96,7 @@ async def setup(bot: Vale):
             logger=container.logger(),
             bot=bot,
             application=container.application(),
+            application_service=container.application_service(),
             voice_category=container.voice_category(),
             voice_hub=container.voice_hub(),
         )

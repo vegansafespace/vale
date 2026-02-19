@@ -45,16 +45,17 @@ class ApplicationModal(ui.Modal, title='Bewerbung'):
             self.antifascist_label: self.antifascist.value
         }
 
-        await self.application_service.save_application(
-            user_id=interaction.user.id,
-            user_tag=str(interaction.user),
-            data=data
-        )
-
-        await self.application_service.notify_team(
+        message = await self.application_service.notify_team(
             guild=interaction.guild,
             user=interaction.user,
             data=data
+        )
+
+        await self.application_service.save_application(
+            user_id=interaction.user.id,
+            user_tag=str(interaction.user),
+            data=data,
+            team_message_id=message.id if message else None
         )
 
         await interaction.response.send_message(
