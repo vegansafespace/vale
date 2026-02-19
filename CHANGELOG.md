@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/vegansafespace/vale/compare/v0.5.0...v0.5.1) (2026-02-19)
+
+
+### Code Refactoring
+
+* **applications:** use `typing` aliases for type hints ([6b4a7dc](https://github.com/vegansafespace/vale/commit/6b4a7dc212a1929f921a44ea604f28a6f8d109f3))
+
 ## [0.5.0](https://github.com/vegansafespace/vale/compare/v0.4.2...v0.5.0) (2026-02-19)
 
 
