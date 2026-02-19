@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/vegansafespace/vale/compare/v0.4.2...v0.5.0) (2026-02-19)
+
+
+### Features
+
+* **applications:** add revoke application functionality ([ed98de8](https://github.com/vegansafespace/vale/commit/ed98de8396c42e319e78bf094a6a93ba979948c4))
+
 ## [0.4.2](https://github.com/vegansafespace/vale/compare/v0.4.1...v0.4.2) (2026-02-18)
 
 
