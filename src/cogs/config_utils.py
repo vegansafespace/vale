@@ -42,7 +42,7 @@ class ConfigUtils(commands.Cog):
         await interaction.response.send_message(f"{name} ID set to {channel_id} (current channel)", ephemeral=True)
 
     @set_group.command(
-        name="application-category",
+        name="app-category",
         description="Set the category ID for application channels to the current category"
     )
     @app_commands.guild_only()
@@ -78,7 +78,7 @@ class ConfigUtils(commands.Cog):
         await self._set_category_id(interaction, ConfigKey.VOICE_CATEGORY_ID, "Voice category")
 
     @set_group.command(
-        name="application-voice-waiting-channel",
+        name="app-voice-waiting",
         description="Set the application voice waiting channel ID to the current channel"
     )
     @app_commands.guild_only()
@@ -105,7 +105,7 @@ class ConfigUtils(commands.Cog):
         await self._set_channel_id(interaction, ConfigKey.VOICE_HUB_CREATE_CHANNEL_ID, "Voice hub create channel")
 
     @set_group.command(
-        name="application-ping-channel",
+        name="app-ping-channel",
         description="Set the application ping channel ID to the current channel"
     )
     @app_commands.guild_only()
