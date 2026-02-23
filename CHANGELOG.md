@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/vegansafespace/vale/compare/v0.6.0...v0.6.1) (2026-02-23)
+
+
+### Code Refactoring
+
+* **config:** simplify command names for clarity ([7c4242e](https://github.com/vegansafespace/vale/commit/7c4242e3b728ae428bb3fa959ff38950ac6a8171))
+
 ## [0.6.0](https://github.com/vegansafespace/vale/compare/v0.5.2...v0.6.0) (2026-02-23)
 
 
