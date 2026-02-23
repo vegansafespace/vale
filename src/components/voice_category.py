@@ -1,13 +1,20 @@
 import re
+from logging import Logger
 from typing import Optional, Dict, List
 
 import discord
 
 from src.helpers.env import VOICE_CATEGORY_ID, DISCORD_GUILD
+from src.helpers.config_keys import ConfigKey
+from src.components.configuration_service import ConfigurationService
 from src.vale import Vale
 
 
 class VoiceCategory:
+    def __init__(self, logger: Logger, configuration_service: ConfigurationService):
+        self.logger = logger
+        self.configuration_service = configuration_service
+
     async def on_join(
             self,
             member: discord.Member,
@@ -49,7 +56,9 @@ class VoiceCategory:
         await self._check_scaling(before.channel.category, bot)
 
     async def _check_scaling(self, category: discord.CategoryChannel, bot: Vale):
-        if category is None or category.id != VOICE_CATEGORY_ID:
+        voice_category_id = await self.configuration_service.get_config_value(category.guild.id, ConfigKey.VOICE_CATEGORY_ID, VOICE_CATEGORY_ID)
+
+        if category is None or category.id != voice_category_id:
             return
 
         voice_channels = [channel for channel in category.channels if
@@ -108,9 +117,11 @@ class VoiceCategory:
             return
 
         # Get voice category by id VOICE_CATEGORY_ID
-        category = discord.utils.get(guild.categories, id=VOICE_CATEGORY_ID)
+        voice_category_id = await self.configuration_service.get_config_value(guild.id, ConfigKey.VOICE_CATEGORY_ID, VOICE_CATEGORY_ID)
+        category = discord.utils.get(guild.categories, id=voice_category_id)
 
         if category is None:
+            self.logger.warning(f"Voice category {voice_category_id} not found for guild {guild.id}.")
             return
 
         voice_channels = [channel for channel in category.channels if
@@ -122,7 +133,7 @@ class VoiceCategory:
         for channel in voice_channels:
             prefix = channel.name.split("#")[0].strip()
 
-            if channel_prefix is not None and channel_prefix is not prefix:
+            if channel_prefix is not None and channel_prefix != prefix:
                 continue
 
             if prefix not in grouped_channels:

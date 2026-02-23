@@ -1,10 +1,17 @@
+from logging import Logger
+
 import discord
 
 from src.helpers.env import VOICE_HUB_MOVE_ME_CHANNEL_ID, VOICE_HUB_CREATE_CHANNEL_ID, VEGAN_ROLE_ID, TEAM_ROLE_ID, \
     VOICE_HUB_CHANNEL_PREFIX
+from src.helpers.config_keys import ConfigKey
+from src.components.configuration_service import ConfigurationService
 
 
 class VoiceHub:
+    def __init__(self, logger: Logger, configuration_service: ConfigurationService):
+        self.logger = logger
+        self.configuration_service = configuration_service
 
     async def on_join_move_me_channel(
             self,
@@ -16,8 +23,21 @@ class VoiceHub:
         channels = after.channel.category.voice_channels
 
         # Remove the move me and create channels
-        channels.remove(after.channel.guild.get_channel(VOICE_HUB_MOVE_ME_CHANNEL_ID))
-        channels.remove(after.channel.guild.get_channel(VOICE_HUB_CREATE_CHANNEL_ID))
+        move_me_channel_id = await self.configuration_service.get_config_value(after.channel.guild.id, ConfigKey.VOICE_HUB_MOVE_ME_CHANNEL_ID, VOICE_HUB_MOVE_ME_CHANNEL_ID)
+        create_channel_id = await self.configuration_service.get_config_value(after.channel.guild.id, ConfigKey.VOICE_HUB_CREATE_CHANNEL_ID, VOICE_HUB_CREATE_CHANNEL_ID)
+
+        move_me_channel = after.channel.guild.get_channel(move_me_channel_id)
+        create_channel = after.channel.guild.get_channel(create_channel_id)
+
+        if move_me_channel is not None:
+            channels.remove(move_me_channel)
+        else:
+            self.logger.warning(f'Move me channel with ID {move_me_channel_id} not found for guild {after.channel.guild.id}')
+
+        if create_channel is not None:
+            channels.remove(create_channel)
+        else:
+            self.logger.warning(f'Create channel with ID {create_channel_id} not found for guild {after.channel.guild.id}')
 
         select = discord.ui.Select(
             options=[

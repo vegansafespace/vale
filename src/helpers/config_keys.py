@@ -1,0 +1,17 @@
+from enum import Enum
+
+class ConfigKey(Enum):
+    APPLICATION_CATEGORY_ID = "application_category_id"
+    APPLICATION_VOICE_WAITING_CHANNEL_ID = "application_voice_waiting_channel_id"
+    APPLICATION_PING_CHANNEL_ID = "application_ping_channel_id"
+    REPORTS_CHANNEL_ID = "reports_channel_id"
+    ROLE_JUSTIFICATION_CHANNEL_ID = "role_justification_channel_id"
+    PRIVATE_CHANNELS_CATEGORY_ID = "private_channels_category_id"
+    VOICE_HUB_CATEGORY_ID = "voice_hub_category_id"
+    VOICE_HUB_MOVE_ME_CHANNEL_ID = "voice_hub_move_me_channel_id"
+    VOICE_HUB_CREATE_CHANNEL_ID = "voice_hub_create_channel_id"
+    VOICE_CATEGORY_ID = "voice_category_id"
+    TEAM_BANS_CHANNEL_ID = "team_bans_channel_id"
+    TEAM_APPLICATIONS_CHANNEL_ID = "team_applications_channel_id"
+    MAIN_CHAT_CHANNEL_ID = "main_chat_channel_id"
+    NON_VEGAN_MAIN_CHAT_CHANNEL_ID = "non_vegan_main_chat_channel_id"

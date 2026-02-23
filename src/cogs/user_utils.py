@@ -8,6 +8,7 @@ from discord.ext import commands
 from dependency_injector.wiring import Provide, inject
 
 from src.helpers.env import NEW_USER_ROLE_ID, VEGAN_ROLE_ID, REPORTS_CHANNEL_ID, TEAM_APPLICATIONS_CHANNEL_ID
+from src.helpers.config_keys import ConfigKey
 from src.main import container
 from src.modals.application_modal import ApplicationModal
 from src.modals.test_modal import TestModal
@@ -21,11 +22,13 @@ class UserUtils(commands.Cog):
             self,
             logger: Logger,
             bot: Vale,
-            application_service: ApplicationService
+            application_service: ApplicationService,
+            configuration_service: Provide["configuration_service"]
     ):
         self.logger = logger
         self.bot = bot
         self.application_service = application_service
+        self.configuration_service = configuration_service
 
         self.bot.tree.add_command(
             app_commands.ContextMenu(
@@ -80,7 +83,17 @@ class UserUtils(commands.Cog):
         #    discord.ui.Button(label='Ticket erstellen', style=discord.ButtonStyle.primary, custom_id='create_ticket'))
 
         # Handle report by sending it into a reports channel
-        reports_channel = interaction.guild.get_channel(REPORTS_CHANNEL_ID)
+        reports_channel_id = await self.configuration_service.get_config_value(interaction.guild_id, ConfigKey.REPORTS_CHANNEL_ID, REPORTS_CHANNEL_ID)
+        reports_channel = interaction.guild.get_channel(reports_channel_id)
+
+        if reports_channel is None:
+            self.logger.warning(f'Reports channel {reports_channel_id} not found!')
+
+            interaction.response.send_message(
+                'Der Reports-Kanal ist nicht vorhanden! Bitte kontaktiere ein Teammitglied.',
+                ephemeral=True
+            )
+            return
 
         await reports_channel.send(embed=embed, view=url_view)
 
@@ -144,5 +157,6 @@ async def setup(bot: Vale):
             logger=container.logger(),
             bot=bot,
             application_service=container.application_service(),
+            configuration_service=container.configuration_service(),
         )
     )

@@ -11,15 +11,18 @@ from discord.utils import MISSING
 from src.helpers.env import VEGAN_ROLE_ID, NON_VEGAN_ROLE_ID, TEAM_ROLE_ID, NEW_USER_ROLE_ID, \
     ROLE_JUSTIFICATION_CHANNEL_ID, MAIN_CHAT_CHANNEL_ID, TEAM_BANS_CHANNEL_ID, NON_VEGAN_MAIN_CHAT_CHANNEL_ID, \
     OUTREACH_ROLE_ID
+from src.helpers.config_keys import ConfigKey
+from src.components.configuration_service import ConfigurationService
 from src.main import container
 from src.vale import Vale
 
 
 class TeamUtils(commands.Cog):
     @inject
-    def __init__(self, logger: Logger, bot: Vale):
+    def __init__(self, logger: Logger, bot: Vale, configuration_service: ConfigurationService):
         self.logger = logger
         self.bot = bot
+        self.configuration_service = configuration_service
 
     @app_commands.command(
         description='Eine Person bannen',
@@ -76,16 +79,26 @@ class TeamUtils(commands.Cog):
         embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
 
         # Handle report by sending it into a role justification channel
-        bans_channel = interaction.guild.get_channel(TEAM_BANS_CHANNEL_ID)
+        bans_channel_id = await self.configuration_service.get_config_value(interaction.guild_id, ConfigKey.TEAM_BANS_CHANNEL_ID, TEAM_BANS_CHANNEL_ID)
+        bans_channel = interaction.guild.get_channel(bans_channel_id)
+
+        if bans_channel is None:
+            self.logger.warning(f'Bans channel {bans_channel_id} not found!')
+
+            await interaction.response.send_message(
+                'Der Bans-Channel ist nicht vorhanden!',
+                ephemeral=True
+            )
+            return
 
         await bans_channel.send(embed=embed)
 
         has_sent_dm = await self._send_ban_dm(interaction, user, reason)
 
-        await interaction.response.send_message('Du hast {} gebannt! ({})'.format(
-            user.mention,
-            has_sent_dm and 'DM gesendet.' or 'Keine DM gesendet.'
-        ), ephemeral=True)
+        await interaction.response.send_message(
+            f'Du hast {user.mention} gebannt! ({has_sent_dm and "DM gesendet." or "Keine DM gesendet."})',
+            ephemeral=True
+        )
 
     async def _send_ban_dm(self, interaction: discord.Interaction, user: discord.User, reason: str) -> bool:
         try:
@@ -226,7 +239,17 @@ class TeamUtils(commands.Cog):
         embed.set_thumbnail(url=member.display_avatar.url)
 
         # Handle report by sending it into a role justification channel
-        role_justification_channel = interaction.guild.get_channel(ROLE_JUSTIFICATION_CHANNEL_ID)
+        role_justification_channel_id = await self.configuration_service.get_config_value(interaction.guild_id, ConfigKey.ROLE_JUSTIFICATION_CHANNEL_ID, ROLE_JUSTIFICATION_CHANNEL_ID)
+        role_justification_channel = interaction.guild.get_channel(role_justification_channel_id)
+
+        if role_justification_channel is None:
+            self.logger.warning(f'Role justification channel {role_justification_channel_id} not found!')
+
+            interaction.response.send_message(
+                'Der Kanal für Rollenbegründungen ist nicht vorhanden! Bitte kontaktiere ein Teammitglied.',
+                ephemeral=True
+            )
+            return
 
         await role_justification_channel.send(embed=embed)
 
@@ -262,7 +285,18 @@ class TeamUtils(commands.Cog):
         )
 
         # Welcome member to everyone
-        main_chat_channel = interaction.guild.get_channel(MAIN_CHAT_CHANNEL_ID)
+        main_chat_channel_id = await self.configuration_service.get_config_value(interaction.guild_id, ConfigKey.MAIN_CHAT_CHANNEL_ID, MAIN_CHAT_CHANNEL_ID)
+        main_chat_channel = interaction.guild.get_channel(main_chat_channel_id)
+
+        if main_chat_channel is None:
+            self.logger.warning(f'Main chat channel {main_chat_channel_id} not found!')
+
+            interaction.response.send_message(
+                'Der Hauptchat-Kanal ist nicht vorhanden! Bitte kontaktiere ein Teammitglied.',
+                ephemeral=True
+            )
+
+            return
 
         await main_chat_channel.send(
             content="Willkommen {} auf Vegan Safespace!".format(member.mention),
@@ -286,7 +320,17 @@ class TeamUtils(commands.Cog):
         )
 
         # Welcome member to everyone in the non-vegan channel
-        non_vegan_main_chat_channel = interaction.guild.get_channel(NON_VEGAN_MAIN_CHAT_CHANNEL_ID)
+        non_vegan_main_chat_channel_id = await self.configuration_service.get_config_value(interaction.guild_id, ConfigKey.NON_VEGAN_MAIN_CHAT_CHANNEL_ID, NON_VEGAN_MAIN_CHAT_CHANNEL_ID)
+        non_vegan_main_chat_channel = interaction.guild.get_channel(non_vegan_main_chat_channel_id)
+
+        if non_vegan_main_chat_channel is None:
+            self.logger.warning(f'Non-vegan main chat channel {non_vegan_main_chat_channel_id} not found!')
+
+            interaction.response.send_message(
+                'Der Non-Vegan Hauptchat-Kanal ist nicht vorhanden! Bitte kontaktiere ein Teammitglied.',
+                ephemeral=True
+            )
+            return
 
         outreach_role = discord.utils.get(member.guild.roles, id=OUTREACH_ROLE_ID)
 
@@ -301,5 +345,6 @@ async def setup(bot: Vale):
         TeamUtils(
             logger=container.logger(),
             bot=bot,
+            configuration_service=container.configuration_service(),
         )
     )

@@ -2,14 +2,17 @@ from logging import Logger
 from typing import Union, Optional
 from motor.motor_asyncio import AsyncIOMotorClient
 import discord
+from src.components.configuration_service import ConfigurationService
 from src.helpers.env import MONGO_DATABASE, TEAM_APPLICATIONS_CHANNEL_ID
+from src.helpers.config_keys import ConfigKey
 
 
 class ApplicationService:
-    def __init__(self, db_client: AsyncIOMotorClient, logger: Logger):
+    def __init__(self, db_client: AsyncIOMotorClient, logger: Logger, configuration_service: ConfigurationService):
         self.db = db_client.get_database(MONGO_DATABASE)
         self.collection = self.db.get_collection("applications")
         self.logger = logger
+        self.configuration_service = configuration_service
 
     async def has_application(self, user_id: int) -> bool:
         return await self.collection.count_documents({"user_id": user_id}) > 0
@@ -29,9 +32,13 @@ class ApplicationService:
 
 
     async def notify_team(self, guild: discord.Guild, user: discord.User, data: dict) -> Optional[discord.Message]:
-        channel = guild.get_channel(TEAM_APPLICATIONS_CHANNEL_ID)
+        channel_id = await self.configuration_service.get_config_value(guild.id, ConfigKey.TEAM_APPLICATIONS_CHANNEL_ID, TEAM_APPLICATIONS_CHANNEL_ID)
+        channel = guild.get_channel(channel_id)
 
-        if not channel:
+        if channel is None:
+            self.logger.warning(
+                f"Team applications channel with ID {channel_id} not found in guild {guild.id}. Cannot send application notification."
+            )
             return None
 
         embed = discord.Embed(
@@ -66,37 +73,44 @@ class ApplicationService:
         # Attempt to delete the message in the team channel
         team_message_id = application.get('team_message_id')
 
-        if team_message_id:
-            team_channel = guild.get_channel(TEAM_APPLICATIONS_CHANNEL_ID)
+        if team_message_id is None:
+            self.logger.warning(f"No team message ID found for application of user {user.id} in guild {guild.id}. Cannot delete application in team channel.")
+            return False
 
-            if team_channel:
-                description = f"Die Bewerbung von {user.mention} ({user.name}; {user.id}) wurde zurückgezogen."
+        channel_id = await self.configuration_service.get_config_value(guild.id, ConfigKey.TEAM_APPLICATIONS_CHANNEL_ID, TEAM_APPLICATIONS_CHANNEL_ID)
+        team_channel = guild.get_channel(channel_id)
 
-                if reason:
-                    description += f" Grund: {reason}"
+        if team_channel is None:
+            self.logger.warning(f"Team applications channel with ID {channel_id} not found in guild {guild.id}. Cannot delete application in team channel.")
+            return False
 
-                embed = discord.Embed(
-                    title="Bewerbung zurückgezogen",
-                    description=description,
-                    color=discord.Color.red(),
-                    timestamp=discord.utils.utcnow()
-                )
+        description = f"Die Bewerbung von {user.mention} ({user.name}; {user.id}) wurde zurückgezogen."
 
-                embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
+        if reason:
+            description += f" Grund: {reason}"
 
-                try:
-                    message = await team_channel.fetch_message(team_message_id)
-                    await team_channel.send(embed=embed, reference=message)
-                    await message.delete()
-                except discord.NotFound:
-                    await team_channel.send(embed=embed)
-                except Exception as e:
-                    self.logger.error(f"Error removing application for {user.id}: {e}")
-                    # Still try to send the notification if possible
-                    try:
-                        await team_channel.send(embed=embed)
-                    except Exception:
-                        pass
+        embed = discord.Embed(
+            title="Bewerbung zurückgezogen",
+            description=description,
+            color=discord.Color.red(),
+            timestamp=discord.utils.utcnow()
+        )
+
+        embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
+
+        try:
+            message = await team_channel.fetch_message(team_message_id)
+            await team_channel.send(embed=embed, reference=message)
+            await message.delete()
+        except discord.NotFound:
+            await team_channel.send(embed=embed)
+        except Exception as e:
+            self.logger.error(f"Error removing application for {user.id}: {e}")
+            # Still try to send the notification if possible
+            try:
+                await team_channel.send(embed=embed)
+            except Exception:
+                pass
 
         await self.delete_application(user.id)
         return True

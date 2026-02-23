@@ -1,9 +1,17 @@
+from logging import Logger
+
 import discord
 
 from src.helpers.env import APPLICATION_PING_CHANNEL_ID, SUPPORT_ROLE_ID
+from src.helpers.config_keys import ConfigKey
+from src.components.configuration_service import ConfigurationService
 
 
 class Application:
+    def __init__(self, logger: Logger, configuration_service: ConfigurationService):
+        self.logger = logger
+        self.configuration_service = configuration_service
+
     async def on_join_waiting_room(
             self,
             member: discord.Member,
@@ -12,7 +20,8 @@ class Application:
     ):
         channel = after.channel
 
-        application_ping_channel = channel.guild.get_channel(APPLICATION_PING_CHANNEL_ID)
+        ping_channel_id = await self.configuration_service.get_config_value(channel.guild.id, ConfigKey.APPLICATION_PING_CHANNEL_ID, APPLICATION_PING_CHANNEL_ID)
+        application_ping_channel = channel.guild.get_channel(ping_channel_id)
         support_role = discord.utils.get(channel.guild.roles, id=SUPPORT_ROLE_ID)
 
         # Check if any support member is online
@@ -98,7 +107,12 @@ class Application:
     ):
         channel = before.channel
 
-        application_ping_channel = channel.guild.get_channel(APPLICATION_PING_CHANNEL_ID)
+        ping_channel_id = await self.configuration_service.get_config_value(channel.guild.id, ConfigKey.APPLICATION_PING_CHANNEL_ID, APPLICATION_PING_CHANNEL_ID)
+        application_ping_channel = channel.guild.get_channel(ping_channel_id)
+
+        if application_ping_channel is None:
+            self.logger.warning(f'Application ping channel {ping_channel_id} not found!')
+            return
 
         # Remove ping message if user left the application waiting room
         async for message in application_ping_channel.history(limit=100):
