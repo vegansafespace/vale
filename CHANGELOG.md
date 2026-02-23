@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/vegansafespace/vale/compare/v0.5.2...v0.6.0) (2026-02-23)
+
+
+### Features
+
+* **configuration:** introduce dynamic config management ([c475008](https://github.com/vegansafespace/vale/commit/c475008d076e86a578f6acf8f569338b8f5d2ae0))
+
 ## [0.5.2](https://github.com/vegansafespace/vale/compare/v0.5.1...v0.5.2) (2026-02-19)
 
 
