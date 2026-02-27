@@ -129,40 +129,109 @@ class LevelingService:
 
     async def _handle_level_up(self, member: discord.Member, new_level: int, channel: Optional[MessageableChannel] = None):
         self.logger.info(f"User {member.id} leveled up to {new_level} in guild {member.guild.id}")
-        
-        assigned_role = None
-        # Ranks every 5th level: 5, 10, 15, ..., 60
-        if new_level % 5 == 0:
-            leveling_roles = await self.configuration_service.get_config_value(member.guild.id, ConfigKey.LEVELING_ROLES, {})
-            role_id = leveling_roles.get(str(new_level))
-            
-            if role_id:
-                role = member.guild.get_role(int(role_id))
-                if role:
-                    try:
-                        await member.add_roles(role, reason=f"Reached level {new_level}")
-                        self.logger.info(f"Assigned role {role.name} to {member.id} for level {new_level}")
-                        assigned_role = role
-                    except discord.Forbidden:
-                        self.logger.error(f"Failed to assign role {role.id} to {member.id}: Forbidden")
-                else:
-                    self.logger.warning(f"Role ID {role_id} for level {new_level} not found in guild {member.guild.id}")
+
+        leveling_roles = await self.configuration_service.get_config_value(member.guild.id, ConfigKey.LEVELING_ROLES, {})
+        assigned_role = await self._assign_leveling_role(member, new_level, leveling_roles)
+
+        await self._cleanup_old_leveling_roles(member, new_level, leveling_roles)
 
         if channel:
-            message = f"Glückwunsch {member.mention}, du bist gerade auf Level {new_level} aufgestiegen!"
-            if assigned_role:
-                message += f" Du bist nun {assigned_role.name}!"
-            
+            await self._send_level_up_message(member, new_level, channel, assigned_role)
+
+    async def _assign_leveling_role(self, member: discord.Member, level: int, leveling_roles: dict) -> Optional[discord.Role]:
+        # Ranks every 5th level: 5, 10, 15, ..., 60
+        if level % 5 != 0:
+            return None
+
+        role_id = leveling_roles.get(str(level))
+
+        if not role_id:
+            return None
+
+        role = member.guild.get_role(int(role_id))
+
+        if not role:
+            self.logger.warning(f"Role ID {role_id} for level {level} not found in guild {member.guild.id}")
+            return None
+
+        try:
+            await member.add_roles(role, reason=f"Reached level {level}")
+            self.logger.info(f"Assigned role {role.name} to {member.id} for level {level} in guild {member.guild.id}")
+            return role
+        except discord.Forbidden:
+            self.logger.error(f"Failed to assign role {role.id} to {member.id} in guild {member.guild.id}: Forbidden")
+            return None
+
+    async def _cleanup_old_leveling_roles(self, member: discord.Member, current_level: int, leveling_roles: dict):
+        if not leveling_roles:
+            return
+
+        roles_to_remove = []
+        for lv, r_id in leveling_roles.items():
+            if int(lv) < current_level:
+                role = member.guild.get_role(int(r_id))
+                if role and role in member.roles:
+                    roles_to_remove.append(role)
+
+        if roles_to_remove:
             try:
-                await channel.send(message)
+                await member.remove_roles(*roles_to_remove, reason=f"Leveled up to {current_level}")
+                self.logger.info(f"Removed {len(roles_to_remove)} older leveling roles from {member.id} in guild {member.guild.id}:")
             except discord.Forbidden:
-                self.logger.warning(f"Could not send level up message to channel {channel.id} in guild {member.guild.id}: Forbidden")
+                self.logger.error(f"Failed to remove older leveling roles from {member.id} in guild {member.guild.id}: Forbidden")
+
+    async def _send_level_up_message(self, member: discord.Member, level: int, channel: MessageableChannel, assigned_role: Optional[discord.Role]):
+        message = f"Glückwunsch {member.mention}, du bist gerade auf Level {level} aufgestiegen!"
+        if assigned_role:
+            message += f" Du bist nun {assigned_role.name}!"
+
+        try:
+            await channel.send(message)
+        except discord.Forbidden:
+            self.logger.warning(f"Could not send level up message to channel {channel.id} in guild {member.guild.id}: Forbidden")
 
     async def get_user_data(self, guild_id: int, user_id: int) -> dict:
         data = await self.collection.find_one({"guild_id": guild_id, "user_id": user_id})
         if not data:
             return {"xp": 0, "level": 0}
         return data
+
+    async def restore_level_roles(self, member: discord.Member):
+        user_data = await self.get_user_data(member.guild.id, member.id)
+        current_level = user_data.get("level", 0)
+
+        leveling_roles = await self.configuration_service.get_config_value(member.guild.id, ConfigKey.LEVELING_ROLES, {})
+        if not leveling_roles:
+            return
+
+        highest_lv = -1
+        highest_role = None
+        all_leveling_roles = []
+
+        for lv_str, r_id in leveling_roles.items():
+            lv = int(lv_str)
+            role = member.guild.get_role(int(r_id))
+            if not role:
+                continue
+
+            all_leveling_roles.append(role)
+            if lv <= current_level and lv > highest_lv:
+                highest_lv = lv
+                highest_role = role
+
+        roles_to_add = [highest_role] if highest_role and highest_role not in member.roles else []
+        roles_to_remove = [r for r in all_leveling_roles if r != highest_role and r in member.roles]
+
+        try:
+            if roles_to_add:
+                await member.add_roles(*roles_to_add, reason="Restoring leveling roles")
+                self.logger.info(f"Restored role {highest_role.name} to {member.id} (level {current_level}) for guild {member.guild.id}")
+
+            if roles_to_remove:
+                await member.remove_roles(*roles_to_remove, reason="Cleaning up leveling roles")
+                self.logger.info(f"Removed {len(roles_to_remove)} leveling roles from {member.id} for guild {member.guild.id}")
+        except discord.Forbidden:
+            self.logger.error(f"Failed to restore/cleanup leveling roles for {member.id} in guild {member.guild.id}: Forbidden")
 
     async def set_level_role(self, guild_id: int, level: int, role_id: int):
         max_level = await self.get_max_level(guild_id)

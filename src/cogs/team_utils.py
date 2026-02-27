@@ -13,16 +13,18 @@ from src.helpers.env import VEGAN_ROLE_ID, NON_VEGAN_ROLE_ID, TEAM_ROLE_ID, NEW_
     OUTREACH_ROLE_ID
 from src.helpers.config_keys import ConfigKey
 from src.components.configuration_service import ConfigurationService
+from src.components.leveling_service import LevelingService
 from src.main import container
 from src.vale import Vale
 
 
 class TeamUtils(commands.Cog):
     @inject
-    def __init__(self, logger: Logger, bot: Vale, configuration_service: ConfigurationService):
+    def __init__(self, logger: Logger, bot: Vale, configuration_service: ConfigurationService, leveling_service: LevelingService):
         self.logger = logger
         self.bot = bot
         self.configuration_service = configuration_service
+        self.leveling_service = leveling_service
 
     @app_commands.command(
         description='Eine Person bannen',
@@ -195,6 +197,12 @@ class TeamUtils(commands.Cog):
         if role_to_remove in member.roles:
             await member.remove_roles(role_to_remove)
 
+        # Restore leveling roles
+        try:
+            await self.leveling_service.restore_level_roles(member)
+        except Exception as e:
+            self.logger.error(f"Failed to restore leveling roles for {member.id} in guild {interaction.guild_id}: {e}")
+
         # Send message to member in channel
         await interaction.channel.send(
             f'{member.mention} hat die Rolle @{role_to_assign.name} bekommen!'
@@ -346,5 +354,6 @@ async def setup(bot: Vale):
             logger=container.logger(),
             bot=bot,
             configuration_service=container.configuration_service(),
+            leveling_service=container.leveling_service(),
         )
     )
