@@ -125,7 +125,7 @@ class VoiceHub:
 
         # Send message to user in the move-me channel allowing him to choose a channel
         await after.channel.send(
-            f'{member.mention} Bitte wähle einen Kanal aus, dem Du gerne beitreten möchtest:',
+            f'{member.mention} Bitte wähle einen Kanal aus, dem du gerne beitreten möchtest:',
             view=discord.ui.View(timeout=None).add_item(select),
         )
 

@@ -66,7 +66,7 @@ def main() -> None:
                 ret += 1
 
         await ctx.message.reply(
-            f"Synced the tree to {ret}/{len(guilds)}.",
+            f"Synced command tree to {ret}/{len(guilds)} guilds.",
         )
 
     bot.run(token=DISCORD_TOKEN)

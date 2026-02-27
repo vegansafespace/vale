@@ -211,7 +211,7 @@ class LevelingUtils(commands.Cog):
         xp_needed = next_level_xp - xp
         
         embed = discord.Embed(
-            title=f"Rank for {target.display_name}",
+            title=f"Rang für {target.display_name}",
             color=discord.Color.blue()
         )
         embed.set_thumbnail(url=target.display_avatar.url)
@@ -222,12 +222,12 @@ class LevelingUtils(commands.Cog):
             progress = (xp / next_level_xp) * 100 if next_level_xp > 0 else 0
             messages_needed = (xp_needed + xp_per_message - 1) // xp_per_message
             embed.add_field(
-                name="Progress to Level " + str(level + 1), 
-                value=f"{progress:.1f}% ({xp_needed:,} XP, ~{messages_needed:,} messages remaining)", 
+                name="Fortschritt zu Level " + str(level + 1),
+                value=f"{progress:.1f}% ({xp_needed:,} XP [~{messages_needed:,} Nachrichten] verbleibend)",
                 inline=False
             )
         else:
-            embed.add_field(name="Progress", value="Maximum level reached!", inline=False)
+            embed.add_field(name="Fortschritt", value="Maximales Level erreicht!", inline=False)
 
         await interaction.response.send_message(embed=embed)
 

@@ -47,7 +47,7 @@ class UserUtils(commands.Cog):
     @app_commands.checks.has_role(VEGAN_ROLE_ID)
     async def show_join_date(self, interaction: discord.Interaction, member: discord.Member):
         await interaction.response.send_message(
-            f'{member} ist <t:{member.joined_at.timestamp()}:R> gejoined',
+            f'{member} ist <t:{int(member.joined_at.timestamp())}:R> beigetreten',
             ephemeral=True
         )
 
