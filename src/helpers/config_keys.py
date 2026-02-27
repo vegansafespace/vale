@@ -15,3 +15,8 @@ class ConfigKey(Enum):
     TEAM_APPLICATIONS_CHANNEL_ID = "team_applications_channel_id"
     MAIN_CHAT_CHANNEL_ID = "main_chat_channel_id"
     NON_VEGAN_MAIN_CHAT_CHANNEL_ID = "non_vegan_main_chat_channel_id"
+    LEVELING_ROLES = "leveling_roles"
+    LEVELING_MAX_LEVEL = "leveling_max_level"
+    LEVELING_XP_PER_MESSAGE = "leveling_xp_per_message"
+    LEVELING_EXCLUDED_CHANNELS = "leveling_excluded_channels"
+    LEVELING_EXCLUDED_CATEGORIES = "leveling_excluded_categories"

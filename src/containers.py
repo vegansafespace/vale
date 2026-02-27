@@ -7,6 +7,7 @@ from src.logger import logger as log
 from src.components.application import Application
 from src.components.application_service import ApplicationService
 from src.components.configuration_service import ConfigurationService
+from src.components.leveling_service import LevelingService
 from src.components.voice_category import VoiceCategory
 from src.components.voice_hub import VoiceHub
 from src.helpers.mongodb import create_mongodb_client
@@ -29,3 +30,4 @@ class Container(containers.DeclarativeContainer):
     application = providers.Singleton(Application, logger=logger, configuration_service=configuration_service)
     voice_category = providers.Singleton(VoiceCategory, logger=logger, configuration_service=configuration_service)
     voice_hub = providers.Singleton(VoiceHub, logger=logger, configuration_service=configuration_service)
+    leveling_service = providers.Singleton(LevelingService, db_client=db_client, logger=logger, configuration_service=configuration_service)

@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from src.components.application import Application
 from src.components.application_service import ApplicationService
+from src.components.leveling_service import LevelingService
 from src.components.voice_category import VoiceCategory
 from src.components.voice_hub import VoiceHub
 from src.helpers.env import NEW_USER_ROLE_ID, VOICE_HUB_MOVE_ME_CHANNEL_ID, VOICE_HUB_CREATE_CHANNEL_ID, \
@@ -18,7 +19,17 @@ from src.vale import Vale
 
 class Events(commands.Cog):
     @inject
-    def __init__(self, logger: Logger, bot: Vale, application: Application, application_service: ApplicationService, voice_category: VoiceCategory, voice_hub: VoiceHub, configuration_service: ConfigurationService):
+    def __init__(
+            self,
+            logger: Logger,
+            bot: Vale,
+            application: Application,
+            application_service: ApplicationService,
+            voice_category: VoiceCategory,
+            voice_hub: VoiceHub,
+            configuration_service: ConfigurationService,
+            leveling_service: LevelingService
+    ):
         self.bot = bot
 
         self.logger = logger
@@ -27,10 +38,14 @@ class Events(commands.Cog):
         self.voice_category = voice_category
         self.voice_hub = voice_hub
         self.configuration_service = configuration_service
+        self.leveling_service = leveling_service
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         self.logger.info(f'{member} (ID: {member.id}) joined the server!')
+
+        # Initialize leveling record
+        await self.leveling_service.initialize_user(member.guild.id, member.id)
 
         new_user_role = discord.utils.get(member.guild.roles, id=NEW_USER_ROLE_ID)
 
@@ -98,6 +113,15 @@ class Events(commands.Cog):
         if before.channel is not None and before.channel.category_id == application_category_id:
             await self.application.on_leave_application_voice(member, before, after)
 
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.author.bot or not message.guild:
+            return
+
+        # Award XP for messages
+        # The service handles cooldowns, level ups and notifications
+        await self.leveling_service.add_xp(message.author, message.channel)
+
 
 async def setup(bot: Vale):
     await bot.add_cog(
@@ -109,5 +133,6 @@ async def setup(bot: Vale):
             voice_category=container.voice_category(),
             voice_hub=container.voice_hub(),
             configuration_service=container.configuration_service(),
+            leveling_service=container.leveling_service(),
         )
     )
