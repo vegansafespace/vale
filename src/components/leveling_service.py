@@ -1,11 +1,21 @@
 from logging import Logger
-from typing import Optional
+from typing import Optional, Union
 import discord
 from motor.motor_asyncio import AsyncIOMotorClient
 from src.helpers.env import MONGO_DATABASE
 from src.helpers.config_keys import ConfigKey
 from src.components.configuration_service import ConfigurationService
 import time
+
+MessageableChannel = Union[
+    discord.TextChannel,
+    discord.VoiceChannel,
+    discord.StageChannel,
+    discord.Thread,
+    discord.DMChannel,
+    discord.PartialMessageable,
+    discord.GroupChannel,
+]
 
 class LevelingService:
     def __init__(self, db_client: AsyncIOMotorClient, logger: Logger, configuration_service: ConfigurationService):
@@ -65,7 +75,7 @@ class LevelingService:
             })
             self.logger.info(f"Initialized leveling record for user {user_id} in guild {guild_id}")
 
-    async def add_xp(self, member: discord.Member, channel: Optional[discord.abc.MessageableChannel] = None, xp_amount: Optional[int] = None) -> bool:
+    async def add_xp(self, member: discord.Member, channel: Optional[MessageableChannel] = None, xp_amount: Optional[int] = None) -> bool:
         user_id = member.id
         guild_id = member.guild.id
         current_time = time.time()
@@ -117,7 +127,7 @@ class LevelingService:
         
         return False
 
-    async def _handle_level_up(self, member: discord.Member, new_level: int, channel: Optional[discord.abc.MessageableChannel] = None):
+    async def _handle_level_up(self, member: discord.Member, new_level: int, channel: Optional[MessageableChannel] = None):
         self.logger.info(f"User {member.id} leveled up to {new_level} in guild {member.guild.id}")
         
         assigned_role = None
