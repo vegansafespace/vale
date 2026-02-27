@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.7.0](https://github.com/vegansafespace/vale/compare/v0.6.1...v0.7.0) (2026-02-27)
+
+
+### Features
+
+* **leveling:** add leveling service and XP system integration ([366b3fc](https://github.com/vegansafespace/vale/commit/366b3fc82112c74cffe8bc80d73ebe52b0324a79))
+
+
+### Documentation
+
+* add AGENTS.md with development and contribution guidelines ([c6790db](https://github.com/vegansafespace/vale/commit/c6790dbe233286ac7ca690e12d5dea6ecdceba6e))
+* **readme:** expand overview and add leveling system details ([6380064](https://github.com/vegansafespace/vale/commit/6380064f14d047677de78e815b7b9afecd62110d))
+
+
+### Code Refactoring
+
+* **env:** add helper for integer env var parsing ([fe0481f](https://github.com/vegansafespace/vale/commit/fe0481f168dc145acdab07a7fd8d1e875fcf628f))
+* **leveling:** replace MessageableChannel type across methods ([4518f65](https://github.com/vegansafespace/vale/commit/4518f6569fbd9025e70e6010a7f8442719f9214a))
+
 ## [0.6.1](https://github.com/vegansafespace/vale/compare/v0.6.0...v0.6.1) (2026-02-23)
 
 
