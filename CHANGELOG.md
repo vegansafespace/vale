@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/vegansafespace/vale/compare/v0.7.0...v0.8.0) (2026-02-27)
+
+
+### Features
+
+* **i18n:** localize strings across multiple components ([0992334](https://github.com/vegansafespace/vale/commit/09923342c7ff9969936ee1b93eb9c33762e794d6))
+
 ## [0.7.0](https://github.com/vegansafespace/vale/compare/v0.6.1...v0.7.0) (2026-02-27)
 
 
