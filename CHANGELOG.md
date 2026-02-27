@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/vegansafespace/vale/compare/v0.8.0...v0.9.0) (2026-02-27)
+
+
+### Features
+
+* **leveling:** enhance leveling service with role management ([7aa1a25](https://github.com/vegansafespace/vale/commit/7aa1a25e240c77d404c09e272d6c1486170e0e67))
+
 ## [0.8.0](https://github.com/vegansafespace/vale/compare/v0.7.0...v0.8.0) (2026-02-27)
 
 
