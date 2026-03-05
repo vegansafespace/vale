@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/vegansafespace/vale/compare/v0.9.0...v0.9.1) (2026-03-05)
+
+
+### Bug Fixes
+
+* **leveling:** prevent cleanup of roles when none are assigned ([1858df4](https://github.com/vegansafespace/vale/commit/1858df41342eca90fd2b6e9a1cb93795a15427b3))
+
 ## [0.9.0](https://github.com/vegansafespace/vale/compare/v0.8.0...v0.9.0) (2026-02-27)
 
 
