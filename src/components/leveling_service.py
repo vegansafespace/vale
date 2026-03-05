@@ -133,7 +133,8 @@ class LevelingService:
         leveling_roles = await self.configuration_service.get_config_value(member.guild.id, ConfigKey.LEVELING_ROLES, {})
         assigned_role = await self._assign_leveling_role(member, new_level, leveling_roles)
 
-        await self._cleanup_old_leveling_roles(member, new_level, leveling_roles)
+        if assigned_role:
+            await self._cleanup_old_leveling_roles(member, new_level, leveling_roles)
 
         if channel:
             await self._send_level_up_message(member, new_level, channel, assigned_role)
