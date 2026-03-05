@@ -111,6 +111,54 @@ class LevelingUtils(commands.Cog):
             await interaction.response.send_message(str(e), ephemeral=True)
 
     @leveling_group.command(
+        name="set-xp-per-voice-interval",
+        description="Set the amount of XP awarded per voice interval (default 15 mins)"
+    )
+    @app_commands.describe(amount="The amount of XP to award per voice interval. Must be between 5 and 50.")
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(TEAM_ROLE_ID)
+    async def set_xp_per_voice_interval(self, interaction: discord.Interaction, amount: int):
+        if amount < 5 or amount > 50:
+            await interaction.response.send_message(
+                f"XP amount must be between 5 and 50.",
+                ephemeral=True
+            )
+            return
+
+        try:
+            await self.leveling_service.set_xp_per_voice_interval(interaction.guild_id, amount)
+            await interaction.response.send_message(
+                f"Successfully set the XP per voice interval to {amount}.",
+                ephemeral=True
+            )
+        except ValueError as e:
+            await interaction.response.send_message(str(e), ephemeral=True)
+
+    @leveling_group.command(
+        name="set-voice-interval",
+        description="Set the interval in minutes for awarding voice XP"
+    )
+    @app_commands.describe(minutes="The interval in minutes. Must be between 1 and 60.")
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(TEAM_ROLE_ID)
+    async def set_voice_interval(self, interaction: discord.Interaction, minutes: int):
+        if minutes < 1 or minutes > 60:
+            await interaction.response.send_message(
+                f"Interval must be between 1 and 60 minutes.",
+                ephemeral=True
+            )
+            return
+
+        try:
+            await self.leveling_service.set_voice_interval_minutes(interaction.guild_id, minutes)
+            await interaction.response.send_message(
+                f"Successfully set the voice XP interval to {minutes} minutes.",
+                ephemeral=True
+            )
+        except ValueError as e:
+            await interaction.response.send_message(str(e), ephemeral=True)
+
+    @leveling_group.command(
         name="toggle-channel-exclusion",
         description="Toggle whether a channel is excluded from earning XP"
     )

@@ -216,3 +216,52 @@ async def test_level_up_notification(leveling_service):
     
     assert result is True
     channel.send.assert_called_with("Glückwunsch <@123>, du bist gerade auf Level 5 aufgestiegen! Du bist nun Test Role!")
+
+@pytest.mark.asyncio
+async def test_role_retention_on_intermediate_level_up(leveling_service):
+    guild_id = 1
+    user_id = 123
+    member = MagicMock()
+    member.id = user_id
+    member.guild.id = guild_id
+    member.roles = [] # Start with no roles
+    member.add_roles = AsyncMock()
+    
+    # Mock role for level 5
+    role_lv5 = MagicMock()
+    role_lv5.id = 555
+    role_lv5.name = "Level 5 Role"
+    member.guild.get_role = MagicMock(side_effect=lambda rid: role_lv5 if rid == 555 else None)
+    
+    leveling_service.collection = AsyncMock()
+    leveling_service.get_max_level = AsyncMock(return_value=60)
+    leveling_service.configuration_service.get_config_value = AsyncMock(return_value={"5": 555})
+    
+    # 1. Level up from 4 to 5 (Should assign role)
+    leveling_service.get_user_data = AsyncMock(return_value={"level": 4, "xp": leveling_service.get_xp_for_level(5) - 10})
+    leveling_service.collection.find_one_and_update = AsyncMock(return_value={"level": 4, "xp": leveling_service.get_xp_for_level(5)})
+    leveling_service.get_level_from_xp = AsyncMock(return_value=5)
+    
+    channel = AsyncMock()
+    await leveling_service.add_xp(member, channel)
+    
+    member.add_roles.assert_called_with(role_lv5, reason="Reached level 5")
+    member.roles.append(role_lv5) # Simulate role addition
+    
+    # 2. Level up from 5 to 6 (Should NOT remove level 5 role, because no new role is assigned at level 6)
+    member.add_roles.reset_mock()
+    member.remove_roles = AsyncMock()
+    
+    leveling_service.get_user_data = AsyncMock(return_value={"level": 5, "xp": leveling_service.get_xp_for_level(6) - 10})
+    leveling_service.collection.find_one_and_update = AsyncMock(return_value={"level": 5, "xp": leveling_service.get_xp_for_level(6)})
+    leveling_service.get_level_from_xp = AsyncMock(return_value=6)
+    
+    # Clear cooldown to allow immediate XP gain
+    leveling_service._cooldowns = {}
+    
+    await leveling_service.add_xp(member, channel)
+    
+    # No new role at level 6
+    member.add_roles.assert_not_called()
+    # Level 5 role should still be there, so remove_roles should NOT be called
+    member.remove_roles.assert_not_called()

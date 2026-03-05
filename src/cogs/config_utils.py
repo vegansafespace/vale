@@ -8,6 +8,7 @@ from src.main import container
 from src.vale import Vale
 from src.helpers.env import TEAM_ROLE_ID
 from src.helpers.config_keys import ConfigKey
+from views.application_view import ApplicationView
 
 
 class ConfigUtils(commands.Cog):
@@ -166,6 +167,26 @@ class ConfigUtils(commands.Cog):
     @app_commands.checks.has_role(TEAM_ROLE_ID)
     async def set_non_vegan_main_chat_channel_id(self, interaction: discord.Interaction):
         await self._set_channel_id(interaction, ConfigKey.NON_VEGAN_MAIN_CHAT_CHANNEL_ID, "Non-vegan main chat channel")
+
+    @set_group.command(
+        name="application-button-channel",
+        description="Set the channel where the application button message will be sent"
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(TEAM_ROLE_ID)
+    async def set_application_button_channel(self, interaction: discord.Interaction):
+        await self.configuration_service.set_config_value(interaction.guild_id, ConfigKey.APPLICATION_BUTTON_CHANNEL_ID, interaction.channel_id)
+
+        embed = discord.Embed(
+            title="Bewerbung für Vegan Safespace",
+            description="Möchtest du dich für unseren Server bewerben? Klicke auf den Button unten, um den Bewerbungsprozess zu starten.",
+            color=discord.Color.green()
+        )
+
+        view = ApplicationView()
+        await interaction.channel.send(embed=embed, view=view)
+        
+        await interaction.response.send_message(f"Application button channel set to {interaction.channel_id} and message sent.", ephemeral=True)
 
 async def setup(bot: Vale):
     await bot.add_cog(

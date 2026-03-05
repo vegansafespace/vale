@@ -3,6 +3,7 @@ from pathlib import Path
 
 import discord
 from discord.ext import commands
+from views.application_view import ApplicationView
 
 
 class Vale(commands.Bot):
@@ -36,6 +37,10 @@ class Vale(commands.Bot):
     async def setup_hook(self):
         # Load cogs dynamically
         await self.load_cogs()
+
+        # Add persistent views
+        from src.main import container
+        self.add_view(ApplicationView(application_service=container.application_service()))
 
     async def load_cogs(self):
         self.logger.info('Loading cogs...')
