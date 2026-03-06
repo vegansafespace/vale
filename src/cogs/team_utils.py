@@ -306,10 +306,13 @@ class TeamUtils(commands.Cog):
 
             return
 
-        await main_chat_channel.send(
+        message = await main_chat_channel.send(
             content="Willkommen {} auf Vegan Safespace!".format(member.mention),
             embed=embed,
         )
+
+        # Add "👋" reaction to the welcome message
+        await message.add_reaction("👋")
 
     async def _welcome_non_vegan(self, assigned_role, executor, interaction, member):
         embed = discord.Embed(
@@ -342,10 +345,13 @@ class TeamUtils(commands.Cog):
 
         outreach_role = discord.utils.get(member.guild.roles, id=OUTREACH_ROLE_ID)
 
-        await non_vegan_main_chat_channel.send(
+        message = await non_vegan_main_chat_channel.send(
             content="Hey {}! Willkommen! ({})".format(member.mention, outreach_role.mention),
             embed=embed,
         )
+
+        # Add "👋" reaction to the welcome message
+        await message.add_reaction("👋")
 
 
 async def setup(bot: Vale):
