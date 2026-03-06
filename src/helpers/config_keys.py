@@ -20,3 +20,5 @@ class ConfigKey(Enum):
     LEVELING_XP_PER_MESSAGE = "leveling_xp_per_message"
     LEVELING_EXCLUDED_CHANNELS = "leveling_excluded_channels"
     LEVELING_EXCLUDED_CATEGORIES = "leveling_excluded_categories"
+    LEVELING_XP_PER_VOICE_INTERVAL = "leveling_xp_per_voice_interval"
+    LEVELING_VOICE_INTERVAL_MINUTES = "leveling_voice_interval_minutes"

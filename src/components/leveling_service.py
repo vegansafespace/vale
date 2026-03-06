@@ -25,6 +25,7 @@ class LevelingService:
         self.configuration_service = configuration_service
         self.xp_cooldown = 60  # seconds
         self._cooldowns = {}
+        self._voice_activity = {}  # {guild_id: {user_id: count}}
 
     def get_xp_for_level(self, level: int) -> int:
         if level <= 0:
@@ -43,6 +44,12 @@ class LevelingService:
 
     async def get_xp_per_message(self, guild_id: int) -> int:
         return await self.configuration_service.get_config_value(guild_id, ConfigKey.LEVELING_XP_PER_MESSAGE, 20)
+
+    async def get_xp_per_voice_interval(self, guild_id: int) -> int:
+        return await self.configuration_service.get_config_value(guild_id, ConfigKey.LEVELING_XP_PER_VOICE_INTERVAL, 5)
+
+    async def get_voice_interval_minutes(self, guild_id: int) -> int:
+        return await self.configuration_service.get_config_value(guild_id, ConfigKey.LEVELING_VOICE_INTERVAL_MINUTES, 15)
 
     async def get_level_from_xp(self, guild_id: int, xp: int) -> int:
         # Determine the level such that xp threshold (floored) is respected,
@@ -75,35 +82,63 @@ class LevelingService:
             })
             self.logger.info(f"Initialized leveling record for user {user_id} in guild {guild_id}")
 
-    async def add_xp(self, member: discord.Member, channel: Optional[MessageableChannel] = None, xp_amount: Optional[int] = None) -> bool:
-        user_id = member.id
+    async def add_voice_xp(self, member: discord.Member) -> bool:
         guild_id = member.guild.id
-        current_time = time.time()
 
-        if user_id in self._cooldowns and current_time - self._cooldowns[user_id] < self.xp_cooldown:
-            return False
-
+        xp_amount = await self.get_xp_per_voice_interval(guild_id)
+        
         # Check for excluded channels/categories
-        if channel:
-            excluded_channels = await self.configuration_service.get_config_value(guild_id, ConfigKey.LEVELING_EXCLUDED_CHANNELS, [])
+        if member.voice and member.voice.channel:
+            channel = member.voice.channel
+            excluded_channels = await self.get_excluded_channels(guild_id)
+
             if channel.id in excluded_channels:
                 return False
             
             if hasattr(channel, "category_id") and channel.category_id:
-                excluded_categories = await self.configuration_service.get_config_value(guild_id, ConfigKey.LEVELING_EXCLUDED_CATEGORIES, [])
+                excluded_categories = await self.get_excluded_categories(guild_id)
+
                 if channel.category_id in excluded_categories:
                     return False
+        
+        # Use add_xp but with a separate cooldown mechanism for voice if needed.
+        return await self._add_xp_internal(member, member.voice.channel if member.voice else None, xp_amount, cooldown_key=f"voice_{member.id}")
+
+    async def increment_voice_activity(self, member: discord.Member):
+        guild_id = member.guild.id
+        user_id = member.id
+
+        if guild_id not in self._voice_activity:
+            self._voice_activity[guild_id] = {}
+
+        self._voice_activity[guild_id][user_id] = self._voice_activity[guild_id].get(user_id, 0) + 1
+
+    async def get_voice_activity(self, guild_id: int, user_id: int) -> int:
+        return self._voice_activity.get(guild_id, {}).get(user_id, 0)
+
+    async def reset_voice_activity(self, guild_id: int):
+        if guild_id in self._voice_activity:
+            self._voice_activity[guild_id] = {}
+
+    async def _add_xp_internal(self, member: discord.Member, channel: Optional[MessageableChannel] = None, xp_amount: int = 0, cooldown_key: Optional[str] = None) -> bool:
+        user_id = member.id
+        guild_id = member.guild.id
+
+        current_time = time.time()
+
+        xp_cooldown_key = cooldown_key or str(user_id)
+
+        if xp_cooldown_key in self._cooldowns and current_time - self._cooldowns[xp_cooldown_key] < self.xp_cooldown:
+            return False
 
         await self.initialize_user(guild_id, user_id)
         
         # Check if user already reached max level
         max_level = await self.get_max_level(guild_id)
         user_data = await self.get_user_data(guild_id, user_id)
+
         if user_data.get("level", 0) >= max_level:
             return False
-
-        if xp_amount is None:
-            xp_amount = await self.get_xp_per_message(guild_id)
 
         user_data = await self.collection.find_one_and_update(
             {"guild_id": guild_id, "user_id": user_id},
@@ -111,10 +146,11 @@ class LevelingService:
             return_document=True
         )
 
-        self._cooldowns[user_id] = current_time
+        self._cooldowns[xp_cooldown_key] = current_time
 
         new_xp = user_data["xp"]
         old_level = user_data["level"]
+
         new_level = await self.get_level_from_xp(guild_id, new_xp)
 
         if new_level > old_level:
@@ -122,10 +158,33 @@ class LevelingService:
                 {"guild_id": guild_id, "user_id": user_id},
                 {"$set": {"level": new_level}}
             )
+
             await self._handle_level_up(member, new_level, channel)
+
             return True
         
         return False
+
+    async def add_xp(self, member: discord.Member, channel: Optional[MessageableChannel] = None, xp_amount: Optional[int] = None) -> bool:
+        guild_id = member.guild.id
+        
+        # Check for excluded channels/categories
+        if channel:
+            excluded_channels = await self.get_excluded_channels(guild_id)
+
+            if channel.id in excluded_channels:
+                return False
+
+            if hasattr(channel, "category_id") and channel.category_id:
+                excluded_categories = await self.get_excluded_categories(guild_id)
+
+                if channel.category_id in excluded_categories:
+                    return False
+
+        if xp_amount is None:
+            xp_amount = await self.get_xp_per_message(guild_id)
+
+        return await self._add_xp_internal(member, channel, xp_amount)
 
     async def _handle_level_up(self, member: discord.Member, new_level: int, channel: Optional[MessageableChannel] = None):
         self.logger.info(f"User {member.id} leveled up to {new_level} in guild {member.guild.id}")
@@ -252,6 +311,16 @@ class LevelingService:
         if xp_amount < 1:
             raise ValueError("XP per message must be at least 1")
         await self.configuration_service.set_config_value(guild_id, ConfigKey.LEVELING_XP_PER_MESSAGE, xp_amount)
+
+    async def set_xp_per_voice_interval(self, guild_id: int, xp_amount: int):
+        if xp_amount < 1:
+            raise ValueError("XP per voice interval must be at least 1")
+        await self.configuration_service.set_config_value(guild_id, ConfigKey.LEVELING_XP_PER_VOICE_INTERVAL, xp_amount)
+
+    async def set_voice_interval_minutes(self, guild_id: int, interval_minutes: int):
+        if interval_minutes < 1:
+            raise ValueError("Voice interval must be at least 1 minute")
+        await self.configuration_service.set_config_value(guild_id, ConfigKey.LEVELING_VOICE_INTERVAL_MINUTES, interval_minutes)
 
     async def toggle_channel_exclusion(self, guild_id: int, channel_id: int) -> bool:
         excluded = await self.configuration_service.get_config_value(guild_id, ConfigKey.LEVELING_EXCLUDED_CHANNELS, [])

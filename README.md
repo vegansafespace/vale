@@ -8,7 +8,8 @@ Vale is a specialized Discord bot designed to automate community management, voi
 - **Member Onboarding**: Manages a structured application process with dedicated waiting rooms and interview channels.
 - **Automated Role Assignment**: Ensures new members receive appropriate roles immediately upon joining.
 - **Moderation Tools**: Streamlines reporting and banning processes for the staff team.
-- **Leveling System**: Reward users for their contributions with XP and ranks (levels 0-60 by default, fully configurable).
+- **Leveling System**: Reward users for their contributions with XP and ranks. Users can earn XP through text messages and voice activity (levels 0-60 by default, fully configurable).
+- **Automated Voice XP**: Periodically grants XP to users active in voice channels, with configurable intervals and rewards.
 - **Task Automation**: Periodically cleans up inactive channels and ensures data consistency across the server.
 
 ## Project Structure
@@ -62,7 +63,7 @@ Tests are automatically run on GitHub for every Pull Request.
 
 ## Leveling
 
-Vale includes a custom leveling system to reward active community members.
+Vale includes a custom leveling system to reward active community members for both text and voice participation.
 
 ### XP Formula
 
@@ -79,7 +80,18 @@ Where:
 The total XP required for level $N$ is the sum of XP required for all previous levels:
 $\sum_{i=0}^{N-1} (5i^2 + 50i + 100)$.
 
+### Text XP
+
 By default, users receive **20 XP** per message with a **60-second cooldown** to prevent spam.
+
+### Voice XP
+
+Users also earn XP for time spent in voice channels:
+
+- **Default interval**: 15 minutes of activity.
+- **Default reward**: 5 XP per interval.
+- Users must be unmuted and undeafend in a voice channel to earn XP.
+- Activity is tracked periodically and XP is awarded once the configured interval is reached.
 
 ## Commands
 
@@ -114,7 +126,9 @@ The following commands are available. Unless noted, commands are guild-only.
 | `/leveling set-role <level> <role>`                | Slash               | Team role        | Sets a reward role for rank levels (multiples of 5).                                                            | Level must be a multiple of 5 and ≤ max level.                       |
 | `/leveling set-max-level <level>`                  | Slash               | Team role        | Sets the maximum level cap for the leveling system.                                                             | Defaults to 60.                                                      |
 | `/leveling set-xp-per-message <amount>`            | Slash               | Team role        | Sets the amount of XP awarded per message for this guild.                                                       | Default is 20 XP.                                                    |
-| `/leveling toggle-channel-exclusion [channel]`    | Slash               | Team role        | Toggles XP exclusion for the specified (or current) channel.                                                    | Useful for bot-command or spam channels.                             |
+| `/leveling set-xp-per-voice-interval <amount>`     | Slash               | Team role        | Sets the amount of XP awarded per voice activity interval.                                                       | Default is 5 XP.                                                     |
+| `/leveling set-voice-interval <minutes>`           | Slash               | Team role        | Sets the duration of the voice activity interval in minutes.                                                    | Default is 15 minutes.                                               |
+| `/leveling toggle-channel-exclusion [channel]`     | Slash               | Team role        | Toggles XP exclusion for the specified (or current) channel.                                                    | Useful for bot-command or spam channels.                             |
 | `/leveling toggle-category-exclusion [id]`         | Slash               | Team role        | Toggles XP exclusion for all channels in the specified (or current) category.                                   | Can use category ID or current channel's category.                   |
 | `/leveling list-exclusions`                        | Slash               | Team role        | Lists all excluded channels and categories.                                                                    | Helpful for auditing configuration.                                  |
 
