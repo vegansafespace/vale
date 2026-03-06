@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.0](https://github.com/vegansafespace/vale/compare/v0.9.1...v0.10.0) (2026-03-06)
+
+
+### Features
+
+* **application:** add reaction to welcome messages ([a04e7c9](https://github.com/vegansafespace/vale/commit/a04e7c91152be914961a449ca7b01270fc5f83ce))
+* **leveling:** add voice activity XP system ([0636f78](https://github.com/vegansafespace/vale/commit/0636f78e898edd1acbe78a353917374077e74c52))
+
 ## [0.9.1](https://github.com/vegansafespace/vale/compare/v0.9.0...v0.9.1) (2026-03-05)
 
 
