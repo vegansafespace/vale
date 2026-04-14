@@ -3,6 +3,7 @@ from logging import Logger
 from typing import Optional, Dict, List
 
 import discord
+from discord.utils import escape_markdown
 
 from src.helpers.env import VOICE_CATEGORY_ID, DISCORD_GUILD
 from src.helpers.config_keys import ConfigKey
@@ -26,9 +27,11 @@ class VoiceCategory:
         if "#" not in after.channel.name:
             return
 
+        clean_display_name = escape_markdown(member.display_name)
+
         # Sent notification in channel that user joined
         await after.channel.send(
-            f'{member.display_name} ist dem Kanal beigetreten.',
+            f'{clean_display_name} ist dem Kanal beigetreten.',
             silent=True,
             delete_after=30 * 60.0  # 30 minutes
         )
