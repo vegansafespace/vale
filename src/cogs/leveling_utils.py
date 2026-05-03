@@ -48,8 +48,24 @@ class LevelingUtils(commands.Cog):
 
         try:
             await self.leveling_service.set_level_role(interaction.guild_id, level, role.id)
-            await interaction.response.send_message(
-                f"Successfully set {role.mention} as the reward for level {level}.",
+            await interaction.response.defer(ephemeral=True)
+
+            users = await self.leveling_service.get_all_guild_users(interaction.guild_id)
+            count = 0
+            for user_data in users:
+                if user_data.get("level", 0) < level:
+                    continue
+                member = interaction.guild.get_member(user_data["user_id"])
+                if member is None:
+                    try:
+                        member = await interaction.guild.fetch_member(user_data["user_id"])
+                    except (discord.NotFound, discord.HTTPException):
+                        continue
+                await self.leveling_service.restore_level_roles(member)
+                count += 1
+
+            await interaction.followup.send(
+                f"Successfully set {role.mention} as the reward for level {level}. Applied roles to {count} member(s).",
                 ephemeral=True
             )
         except ValueError as e:
