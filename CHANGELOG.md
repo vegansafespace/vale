@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/vegansafespace/vale/compare/v0.10.0...v0.11.0) (2026-05-03)
+
+
+### Features
+
+* **leveling:** apply level roles to eligible members ([18242f6](https://github.com/vegansafespace/vale/commit/18242f6ff3943745bdb5124ff5fe06d6d08ba723))
+
+
+### Bug Fixes
+
+* **voice_category:** escape markdown in user display names ([09e2029](https://github.com/vegansafespace/vale/commit/09e20292bcb0cdcfaeb76e412cb5bf0a4ea46ebd))
+
 ## [0.10.0](https://github.com/vegansafespace/vale/compare/v0.9.1...v0.10.0) (2026-03-06)
 
 
