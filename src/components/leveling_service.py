@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Optional, Union
+from typing import Any, Mapping, Optional, Union
 import discord
 from motor.motor_asyncio import AsyncIOMotorClient
 from src.helpers.env import MONGO_DATABASE
@@ -292,6 +292,10 @@ class LevelingService:
                 self.logger.info(f"Removed {len(roles_to_remove)} leveling roles from {member.id} for guild {member.guild.id}")
         except discord.Forbidden:
             self.logger.error(f"Failed to restore/cleanup leveling roles for {member.id} in guild {member.guild.id}: Forbidden")
+
+    async def get_all_guild_users(self, guild_id: int) -> list[Mapping[str, Any]]:
+        cursor = self.collection.find({"guild_id": guild_id})
+        return await cursor.to_list(length=None)
 
     async def set_level_role(self, guild_id: int, level: int, role_id: int):
         max_level = await self.get_max_level(guild_id)
